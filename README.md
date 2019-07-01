@@ -21,4 +21,4 @@ npm install fruitsconfits
 
 ## License
 [ISC](https://github.com/shellyln/liyad/blob/master/LICENSE.md)  
-Copyright (c) 2018, 2019 Shellyl_N and Authors.
+Copyright (c) 2019 Shellyl_N and Authors.
