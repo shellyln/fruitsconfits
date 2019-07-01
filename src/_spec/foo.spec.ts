@@ -1,30 +1,30 @@
 
 import { ParserInputWithCtx,
-    ParserInput,
-    StringParserInputWithCtx,
-    StringParserInput,
-    ParseError,
-    parserInput,
-    ParserFnSucceededResult,
-    ParserFnFailedResult,
-    ParserFnWithCtx,
-    ParserFn,
-    StringParserFnWithCtx,
-    StringParserFn } from '../lib/types';
+         ParserInput,
+         StringParserInputWithCtx,
+         StringParserInput,
+         ParseError,
+         parserInput,
+         ParserFnSucceededResult,
+         ParserFnFailedResult,
+         ParserFnWithCtx,
+         ParserFn,
+         StringParserFnWithCtx,
+         StringParserFn } from '../lib/types';
 import { zeroWidth,
-    zeroWidthError,
-    beginning,
-    end,
-    quantify,
-    first,
-    or,
-    transform,
-    combine } from '../lib/parser';
+         zeroWidthError,
+         beginning,
+         end,
+         quantify,
+         first,
+         or,
+         transform,
+         combine } from '../lib/parser';
 import { charSequence,
-    charClass,
-    charClassNot,
-    charClassByNeedleFn,
-    getStringParsers } from '../lib/string-parser';
+         charClass,
+         charClassNot,
+         charClassByNeedleFn,
+         getStringParsers } from '../lib/string-parser';
 import { getObjectParsers } from '../lib/object-parser';
 import { parse as parseJson } from '../examples/json-parser';
 
