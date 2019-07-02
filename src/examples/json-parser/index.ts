@@ -23,8 +23,6 @@ const {seq, cls, notCls, clsFn, classes, cat,
 });
 
 
-const unescapeString = (s: string) => s;
-
 
 const lineComment =
     combine(
@@ -152,7 +150,7 @@ const numberValue =
           nanValue);
 
 
-const stringEscape = first(
+const stringEscapeSeq = first(
     trans(t => [{token: '\''}])(seq('\\\'')),
     trans(t => [{token: '\"'}])(seq('\\"')),
     trans(t => [{token: '\`'}])(seq('\\`')),
@@ -182,10 +180,10 @@ const stringEscape = first(
 
 const signleQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: unescapeString(tokens[0].token)}])(
+        value: tokens[0].token}])(
         erase(seq("'")),
             cat(repeat(first(
-                stringEscape,
+                stringEscapeSeq,
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls("'"),
             ))),
@@ -193,10 +191,10 @@ const signleQuotStringValue =
 
 const doubleQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: unescapeString(tokens[0].token)}])(
+        value: tokens[0].token}])(
         erase(seq('"')),
             cat(repeat(first(
-                stringEscape,
+                stringEscapeSeq,
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls('"'),
             ))),
@@ -204,10 +202,10 @@ const doubleQuotStringValue =
 
 const backQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: unescapeString(tokens[0].token)}])(
+        value: tokens[0].token}])(
         erase(seq('`')),
             cat(repeat(first(
-                stringEscape,
+                stringEscapeSeq,
                 notCls('`'),
             ))),
         erase(seq('`')),);
