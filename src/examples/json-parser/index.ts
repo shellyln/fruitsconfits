@@ -243,7 +243,7 @@ const listValue = combine(first(
                 erase(repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      atomValue),
+                      input => constExpr(input)),
                 erase(repeat(commentOrSpace)),)),
             repeat(combine(
                 erase(repeat(commentOrSpace),
@@ -251,7 +251,7 @@ const listValue = combine(first(
                       repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      atomValue),
+                      input => constExpr(input)),
                 erase(repeat(commentOrSpace)),)),
             qty(0, 1)(erase(
                 seq(','),
@@ -270,7 +270,7 @@ const objectKeyValuePair =
               repeat(commentOrSpace)),
         first(input => listValue(input),   // NOTE: recursive definitions
               input => objectValue(input), //       should place as lambda.
-              atomValue,
+              input => constExpr(input),
               err('object value is needed.')),
     );
 
@@ -309,9 +309,42 @@ const objectValue = combine(first(
 ));
 
 
+const constExpr = combine(first(
+    // S -> "(" S ")"
+    trans(tokens => [{token: '()', type: 'value', value: tokens[0].value}])( // TODO: parse error
+        erase(seq('('), repeat(commentOrSpace)),
+        input => constExpr(input),
+        erase(repeat(commentOrSpace), seq(')')),),
+
+    // S -> S "*" S
+    trans(tokens => [{token: '*', type: 'value',
+        value: (tokens[0].value as any) * (tokens[2].value as any)}])(
+        preread(qty(1)(first(commentOrSpace, notCls('*', ',', ')', ']', '}'))), seq('*')),
+        first(atomValue, input => constExpr(input)),
+        erase(repeat(commentOrSpace)), seq('*'), erase(repeat(commentOrSpace)),
+        input => constExpr(input),
+        ),
+
+    // S -> S "+" S
+    trans(tokens => [{token: '+', type: 'value',
+        value: (tokens[0].value as any) + (tokens[2].value as any)}])(
+        preread(qty(1)(first(commentOrSpace, notCls('+', ',', ')', ']', '}'))), seq('+')),
+        first(atomValue, input => constExpr(input)),
+        erase(repeat(commentOrSpace)), seq('+'), erase(repeat(commentOrSpace)),
+        input => constExpr(input),
+        ),
+
+    // S -> E
+    trans(tokens => tokens)(
+        erase(repeat(commentOrSpace)),
+        atomValue,
+        erase(repeat(commentOrSpace)),),
+));
+
+
 const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
-    first(listValue, objectValue, atomValue),
+    first(listValue, objectValue, constExpr),
     erase(repeat(commentOrSpace)),
     end(),
 );

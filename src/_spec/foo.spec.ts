@@ -123,6 +123,9 @@ describe("foo", function() {
                    bbb\`, asdf :'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
                 },12,
                 null,undefined,0x1,0b111,0o777,0555,-777,+4321.342,
+                1 * 2 + 3 + 4,
+                1 + 2 * 3 + 4,
+                //(1 + 2) * 3, // TODO: parse error
             ],
         }`);
         console.log(JSON.stringify(z, void 0, 2));
