@@ -31,13 +31,13 @@ import { parse as parseJson } from '../examples/json-parser';
 
 
 describe("foo", function() {
-    it("foo", function() {
+    it("foo1", function() {
         const x = parserInput('foo');
         const y = parserInput([{type: 'aaa', value: 0}]);
         expect(1).toEqual(1);
     });
 
-    it("foo", function() {
+    it("foo2", function() {
         const p: StringParserFnWithCtx<undefined, {ch: string}> = (input: StringParserInput) => {
             return (input.start < input.end ? {
                 succeeded: true,
@@ -60,7 +60,7 @@ describe("foo", function() {
         expect(1).toEqual(1);
     });
 
-    it("foo", function() {
+    it("foo3", function() {
         type Ctx = number;
         type Ast = {token: string};
     
@@ -91,7 +91,7 @@ describe("foo", function() {
         expect(1).toEqual(1);
     });
 
-    it("foo", function() {
+    it("foo4", function() {
         const w = parseJson(`1234`);
         console.log(JSON.stringify(w, void 0, 2));
     
@@ -120,8 +120,8 @@ describe("foo", function() {
                    qqq:\`aa
                    a\\
                    bbb\`, asdf :'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
-                },
-                null,undefined
+                },12,
+                null,undefined,
             ],
         }`);
         console.log(JSON.stringify(z, void 0, 2));
