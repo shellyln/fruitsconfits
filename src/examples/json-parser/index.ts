@@ -153,32 +153,31 @@ const numberValue =
 
 
 const stringEscape = first(
-    trans(t => [{token: '\\\'', type: 'value', value: '\''}])(seq('\\\'')),
-    trans(t => [{token: '\\\"', type: 'value', value: '\"'}])(seq('\\\"')),
-    trans(t => [{token: '\\\`', type: 'value', value: '\`'}])(seq('\\\`')),
-    trans(t => [{token: '\\\\', type: 'value', value: '\\'}])(seq('\\\\')),
-    trans(t => [{token: '\\\n', type: 'value', value: '\n'}])(seq('\\\n')),
-    trans(t => [{token: '\\\r', type: 'value', value: '\r'}])(seq('\\\r')),
-    trans(t => [{token: '\\\v', type: 'value', value: '\v'}])(seq('\\\v')),
-    trans(t => [{token: '\\\t', type: 'value', value: '\t'}])(seq('\\\t')),
-    trans(t => [{token: '\\\b', type: 'value', value: '\b'}])(seq('\\\b')),
-    trans(t => [{token: '\\\f', type: 'value', value: '\f'}])(seq('\\\f')),
-    trans(t => [{token: '\\unnnn', type: 'value',
-        value: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
-        combine(erase(seq('\\u')),
+    trans(t => [{token: '\''}])(seq('\\\'')),
+    trans(t => [{token: '\"'}])(seq('\\"')),
+    trans(t => [{token: '\`'}])(seq('\\`')),
+    trans(t => [{token: '\\'}])(seq('\\\\')),
+    trans(t => [{token: '\r\n'}])(seq('\\\r\n')),
+    trans(t => [{token: '\r'}])(seq('\\\r')),
+    trans(t => [{token: '\n'}])(seq('\\\n')),
+    trans(t => [{token: '\n'}])(seq('\\n')),
+    trans(t => [{token: '\r'}])(seq('\\r')),
+    trans(t => [{token: '\v'}])(seq('\\v')),
+    trans(t => [{token: '\t'}])(seq('\\t')),
+    trans(t => [{token: '\b'}])(seq('\\b')),
+    trans(t => [{token: '\f'}])(seq('\\f')),
+    trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
+        cat(erase(seq('\\u')),
                 qty(4, 4)(first(classes.num, hexAlpha)),)),
-    trans(t => [{token: '\\u{6}', type: 'value',
-        value: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
-        combine(erase(seq('\\u{'),
+    trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
+        cat(erase(seq('\\u{')),
                 qty(1, 6)(first(classes.num, hexAlpha)),
-                erase(seq('}')),))),
-    trans(t => [{token: '\\xnn', type: 'value',
-        value: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
-        combine(erase(seq('\\x')),
+                erase(seq('}')),)),
+    trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
+        cat(erase(seq('\\x')),
                 qty(2, 2)(first(classes.num, hexAlpha)),)),
-    trans(t => [{token: '\\nnn', type: 'value',
-        value: String.fromCodePoint(Number.parseInt(t[0].token, 8))}])(
-        combine(erase(seq('\\')),
+    trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 8))}])(
+        cat(erase(seq('\\')),
                 qty(3, 3)(octNum),)));
 
 const signleQuotStringValue =
@@ -187,6 +186,7 @@ const signleQuotStringValue =
         erase(seq("'")),
             cat(repeat(first(
                 stringEscape,
+                combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls("'"),
             ))),
         erase(seq("'")),);
@@ -197,6 +197,7 @@ const doubleQuotStringValue =
         erase(seq('"')),
             cat(repeat(first(
                 stringEscape,
+                combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls('"'),
             ))),
         erase(seq('"')),);
@@ -308,7 +309,7 @@ const objectValue = combine(first(
 ));
 
 
-const _parse = trans(tokens => tokens)(
+const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
     first(listValue, objectValue, atomValue),
     erase(repeat(commentOrSpace)),
@@ -317,7 +318,7 @@ const _parse = trans(tokens => tokens)(
 
 
 export function parse(s: string) {
-    const z = _parse(parserInput(s));
+    const z = program(parserInput(s));
     if (! z.succeeded) {
         throw new Error(z.message);
     }

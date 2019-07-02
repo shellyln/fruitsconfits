@@ -116,7 +116,10 @@ describe("foo", function() {
                     ggggggggggggggggggg ffffff
                     */
                    ,"zzz" : -5432,
-                   qwerty: -4321.342e-1
+                   qwerty: -4321.342e-1,
+                   qqq:\`aa
+                   a\\
+                   bbb\`, asdf :'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
                 },
                 null,undefined
             ],
