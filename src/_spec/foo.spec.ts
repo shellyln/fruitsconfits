@@ -101,12 +101,13 @@ describe("foo", function() {
         const y = parseJson(`
         {
             "foo" : null ,
-            "bar" : [ null , 1 ,2, "aaaaaa"] , 
+            "bar" : [ null , 1 ,2, "aaaaaa", ] , 
         } `);
         console.log(JSON.stringify(y, void 0, 2));
     
         // const z = parse(parserInput(`{"foo":null,"bar":[{"baz":[null,],},null,],}`, 1));
         const z = parseJson(`
+        # qqqqqqqqqqqqqq
         {
             "foo":null,
             "bar":[
@@ -121,7 +122,7 @@ describe("foo", function() {
                    a\\
                    bbb\`, asdf :'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
                 },12,
-                null,undefined,
+                null,undefined,0x1,0b111,0o777,0555,-777,+4321.342,
             ],
         }`);
         console.log(JSON.stringify(z, void 0, 2));

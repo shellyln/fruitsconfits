@@ -105,7 +105,7 @@ const binaryIntegerValue =
 const octetIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 8)}])
-    (erase(seq('0o'), seq('0')),
+    (erase(first(seq('0o'), seq('0'))),
         cat(qty(1)(octNumSep)));
 
 const hexIntegerValue =
