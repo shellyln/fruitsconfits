@@ -256,7 +256,7 @@ const listValue = combine(first(
             qty(0, 1)(erase(
                 seq(','),
                 repeat(commentOrSpace),)),
-            first(preread(seq(']')), err('Unexpected token is occured.')),
+            first(preread(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
     )
 ));
@@ -303,7 +303,7 @@ const objectValue = combine(first(
             qty(0, 1)(erase(
                 seq(','),
                 repeat(commentOrSpace),)),
-            first(preread(seq('}')), err('Unexpected token is occured.')),
+            first(preread(seq('}')), err('Unexpected token has appeared.')),
         erase(seq('}')),
     )
 ));
