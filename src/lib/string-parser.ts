@@ -13,7 +13,8 @@ import { makeMessage,
          first,
          or,
          transform,
-         preread } from './parser';
+         preread,
+         applyGenerationRules } from './parser';
 
 
 
@@ -322,5 +323,6 @@ export function getStringParsers<C, R>(
         erase: transform<string, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),
         preread,
+        rules: applyGenerationRules,
     });
 }

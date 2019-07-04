@@ -3,8 +3,9 @@
 // https://github.com/shellyln
 
 
-import { parserInput }      from '../../lib/types';
+import { parserInput, ParserFnWithCtx }      from '../../lib/types';
 import { getStringParsers } from '../../lib/string-parser';
+import { getObjectParsers } from '../../lib/object-parser';
 
 
 
@@ -16,12 +17,18 @@ type Ast = {token: string, type?: string, value?: AstValuesT};
 
 const {seq, cls, notCls, clsFn, classes, cat,
         once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, preread} = getStringParsers<Ctx, Ast>({
+        first, or, combine, erase, trans, preread, rules} = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => ({token: rawToken}),
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
 });
 
+const objParsers = getObjectParsers<Ast[], Ctx, Ast>({
+    rawToToken: rawToken => rawToken,
+    concatTokens: tokens => (tokens.length ?
+        [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
+    comparator: (a, b) => a.type === b.type && a.value === b.value,
+});
 
 
 const lineComment =
@@ -243,7 +250,7 @@ const listValue = combine(first(
                 erase(repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => constExpr(input)),
+                      input => constExpr(first(seq(','), seq(']')))(input),),
                 erase(repeat(commentOrSpace)),)),
             repeat(combine(
                 erase(repeat(commentOrSpace),
@@ -251,7 +258,7 @@ const listValue = combine(first(
                       repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => constExpr(input)),
+                      input => constExpr(first(seq(','), seq(']')))(input),),
                 erase(repeat(commentOrSpace)),)),
             qty(0, 1)(erase(
                 seq(','),
@@ -270,7 +277,7 @@ const objectKeyValuePair =
               repeat(commentOrSpace)),
         first(input => listValue(input),   // NOTE: recursive definitions
               input => objectValue(input), //       should place as lambda.
-              input => constExpr(input),
+              input => constExpr(first(seq(','), seq('}')))(input),
               err('object value is needed.')),
     );
 
@@ -309,42 +316,24 @@ const objectValue = combine(first(
 ));
 
 
-const constExpr = combine(first(
-    // S -> "(" S ")"
-    trans(tokens => [{token: '()', type: 'value', value: tokens[0].value}])( // TODO: parse error
-        erase(seq('('), repeat(commentOrSpace)),
-        input => constExpr(input),
-        erase(repeat(commentOrSpace), seq(')')),),
+// const constExprRule1 = objParsers.
 
-    // S -> S "*" S
-    trans(tokens => [{token: '*', type: 'value',
-        value: (tokens[0].value as any) * (tokens[2].value as any)}])(
-        preread(qty(1)(first(commentOrSpace, notCls('*', ',', ')', ']', '}'))), seq('*')),
-        first(atomValue, input => constExpr(input)),
-        erase(repeat(commentOrSpace)), seq('*'), erase(repeat(commentOrSpace)),
-        input => constExpr(input),
-        ),
-
-    // S -> S "+" S
-    trans(tokens => [{token: '+', type: 'value',
-        value: (tokens[0].value as any) + (tokens[2].value as any)}])(
-        preread(qty(1)(first(commentOrSpace, notCls('+', ',', ')', ']', '}'))), seq('+')),
-        first(atomValue, input => constExpr(input)),
-        erase(repeat(commentOrSpace)), seq('+'), erase(repeat(commentOrSpace)),
-        input => constExpr(input),
-        ),
-
-    // S -> E
-    trans(tokens => tokens)(
-        erase(repeat(commentOrSpace)),
-        atomValue,
-        erase(repeat(commentOrSpace)),),
+const constExprInner = (edge: ParserFnWithCtx<string, Ctx, Ast>) => /*rules([])*/(combine(
+    qty(1)(first(erase(commentOrSpace),
+                 atomValue,
+                 trans(tokens => [{
+                     token: tokens[0].token, type: 'op', value: tokens[0].token}])(
+                        cls('*', '+', '(', ')'),))),
+    preread(repeat(commentOrSpace), edge),
 ));
+
+const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) =>
+    constExprInner(edge);
 
 
 const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
-    first(listValue, objectValue, constExpr),
+    first(listValue, objectValue, constExpr(end())),
     erase(repeat(commentOrSpace)),
     end(),
 );

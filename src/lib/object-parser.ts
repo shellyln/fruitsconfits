@@ -12,14 +12,16 @@ import { makeMessage,
          first,
          or,
          transform,
-         preread } from './parser';
+         preread,
+         applyGenerationRules } from './parser';
 
 
 
 export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         params: {
-            rawToToken: (rawToken: string) => R,
+            rawToToken: (rawToken: T[number]) => R,
             concatTokens: (tokens: R[]) => R[],
+            comparator: (a: T[number], b: T[number]) => boolean,
         }) {
 
     return ({
@@ -37,5 +39,6 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         erase: transform<T, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),
         preread,
+        rules: applyGenerationRules,
     });
 }

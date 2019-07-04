@@ -5,6 +5,7 @@
 
 import { ParserInputWithCtx,
          ParseError,
+         parserInput,
          ParserFnFailedResult,
          ParserFnWithCtx } from './types';
 
@@ -329,6 +330,68 @@ export function preread<T extends ArrayLike<T[number]>, C, R>(
             succeeded: true,
             next: input,
             tokens: [],
+        });
+    });
+}
+
+
+export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
+        args: {
+            rules: Array<ParserFnWithCtx<R[], C, R> |
+                   {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,
+            maxApply?: number,
+            check: ParserFnWithCtx<R[], C, R>,
+        }): (lexer: ParserFnWithCtx<T, C, R>) => ParserFnWithCtx<T, C, R> {
+
+    return (lexer => {
+        return (lexerInput => {
+            const lexResult = lexer(lexerInput);
+            if (! lexResult.succeeded) {
+                return lexResult;
+            }
+
+            const input = parserInput<R[], C>(lexResult.tokens, lexerInput.context);
+            let next = input;
+            let tokens: R[] = [];
+            let completed = false;
+
+            completed: for (let i = 0;
+                    args.maxApply !== void 0 ? i < args.maxApply : true; i++) {
+
+                rules: for (const rule of args.rules) {
+                    const {parser, rtol} =
+                        typeof rule === 'function' ?
+                            {parser: rule, rtol: false} : rule;
+                    const len = next.src.length;
+
+                    for (let s = 0; s <= len; s++) {
+                        const x = parser({
+                            src: next.src,
+                            start: rtol ? len - s : s,
+                            end: next.src.length,
+                            context: next.context,
+                        });
+                        if (x.succeeded) {
+                            next = x.next;
+                            tokens = x.tokens;
+                            if (args.check(next).succeeded) {
+                                completed = true;
+                                break completed;
+                            }
+                            break rules;
+                        }
+                    }
+                }
+            }
+            if (! completed) {
+                throw new ParseError(makeErrorMessage(input));
+            }
+
+            return ({
+                succeeded: true,
+                next: lexResult.next,
+                tokens,
+            });
         });
     });
 }
