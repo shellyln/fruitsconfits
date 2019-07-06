@@ -185,11 +185,18 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
             comparator: (a: T[number], b: T[number]) => boolean,
         }) {
 
+    const clsFn = objClassByNeedleFn<T, C, R>(params.rawToToken, params.comparator);
+
+    const isAny = clsFn(src => true);
+
     return ({
         seq: objSequence<T, C, R>(params.rawToToken, params.comparator),
         cls: objClass<T, C, R>(params.rawToToken, params.comparator),
         notCls: objClassNot<T, C, R>(params.rawToToken, params.comparator),
-        clsFn: objClassByNeedleFn<T, C, R>(params.rawToToken, params.comparator),
+        clsFn,
+        classes: {
+            any: isAny,
+        },
         cat: transform<T, C, R>(params.concatTokens),
         once: quantify<T, C, R>(1, 1),
         repeat: quantify<T, C, R>(),

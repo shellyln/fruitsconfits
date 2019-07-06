@@ -23,7 +23,7 @@ const {seq, cls, notCls, clsFn, classes, cat,
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
 });
 
-const objParsers = getObjectParsers<Ast[], Ctx, Ast>({
+const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
@@ -316,19 +316,20 @@ const objectValue = combine(first(
 ));
 
 
-// const constExprRule1 = objParsers.
+const constExprRule1 = $o.combine();
 
-const constExprInner = (edge: ParserFnWithCtx<string, Ctx, Ast>) => /*rules([])*/(combine(
-    qty(1)(first(erase(commentOrSpace),
-                 atomValue,
-                 trans(tokens => [{
-                     token: tokens[0].token, type: 'op', value: tokens[0].token}])(
-                        cls('*', '+', '(', ')'),))),
+const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => /*rules({
+    rules: [constExprRule1],
+    check: $o.combine($o.classes.any, $o.end()),
+})*/(combine(
+    qty(1)(first(
+        erase(commentOrSpace),
+        atomValue,
+        trans(tokens => [{
+            token: tokens[0].token, type: 'op', value: tokens[0].token}])(
+            cls('*', '+', '(', ')'),))),
     preread(repeat(commentOrSpace), edge),
 ));
-
-const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) =>
-    constExprInner(edge);
 
 
 const program = trans(tokens => tokens)(

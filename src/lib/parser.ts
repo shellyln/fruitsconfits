@@ -336,13 +336,16 @@ export function preread<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
+export type ApplyGenerationRulesArg<T extends ArrayLike<T[number]>, C, R> = {
+    rules: Array<ParserFnWithCtx<R[], C, R> |
+           {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,
+    maxApply?: number,
+    check: ParserFnWithCtx<R[], C, R>,
+};
+
 export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
-        args: {
-            rules: Array<ParserFnWithCtx<R[], C, R> |
-                   {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,
-            maxApply?: number,
-            check: ParserFnWithCtx<R[], C, R>,
-        }): (lexer: ParserFnWithCtx<T, C, R>) => ParserFnWithCtx<T, C, R> {
+        args: ApplyGenerationRulesArg<T, C, R>
+        ): (lexer: ParserFnWithCtx<T, C, R>) => ParserFnWithCtx<T, C, R> {
 
     return (lexer => {
         return (lexerInput => {
@@ -353,7 +356,6 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
 
             const input = parserInput<R[], C>(lexResult.tokens, lexerInput.context);
             let next = input;
-            let tokens: R[] = [];
             let completed = false;
 
             completed: for (let i = 0;
@@ -376,7 +378,6 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
                         if (x.succeeded) {
                             matched = true;
                             next = x.next;
-                            tokens = x.tokens;
                             if (args.check(next).succeeded) {
                                 completed = true;
                                 break completed;
@@ -391,13 +392,15 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
                 }
             }
             if (! completed) {
-                throw new ParseError(makeErrorMessage(input));
+                if (! args.check(next).succeeded) {
+                    throw new ParseError(makeErrorMessage(input));
+                }
             }
 
             return ({
                 succeeded: true,
                 next: lexResult.next,
-                tokens,
+                tokens: lexResult.tokens,
             });
         });
     });
