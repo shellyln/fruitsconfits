@@ -271,7 +271,7 @@ export function or<T extends ArrayLike<T[number]>, C, R>(
 
 
 export function transform<T extends ArrayLike<T[number]>, C, R>(
-        trans?: ((tokens: R[]) => R[]), ctxTrans?: ((context: C) => C)
+        trans?: ((tokens: R[], input: ParserInputWithCtx<T, C>) => R[]), ctxTrans?: ((context: C) => C)
         ): (...parsers: Array<ParserFnWithCtx<T, C, R>>) => ParserFnWithCtx<T, C, R> {
 
     return ((...parsers) => {
@@ -288,6 +288,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                 tokens.push(...x.tokens);
             };
 
+            const t2 = trans ? trans(tokens, input) : tokens;
             return ({
                 succeeded: true,
                 next: ctxTrans ? {
@@ -296,7 +297,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                     end: next.end,
                     context: ctxTrans(next.context),
                 } : next,
-                tokens: trans ? trans(tokens) : tokens,
+                tokens: t2,
             });
         });
     });
@@ -357,6 +358,7 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
 
             completed: for (let i = 0;
                     args.maxApply !== void 0 ? i < args.maxApply : true; i++) {
+                let matched = false;
 
                 rules: for (const rule of args.rules) {
                     const {parser, rtol} =
@@ -372,6 +374,7 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
                             context: next.context,
                         });
                         if (x.succeeded) {
+                            matched = true;
                             next = x.next;
                             tokens = x.tokens;
                             if (args.check(next).succeeded) {
@@ -381,6 +384,10 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
                             break rules;
                         }
                     }
+                }
+
+                if (! matched) {
+                    break;
                 }
             }
             if (! completed) {
