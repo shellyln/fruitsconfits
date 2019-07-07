@@ -13,7 +13,9 @@ import { makeMessage,
          first,
          or,
          transform,
-         preread } from './parser';
+         preread,
+         ApplyGenerationRulesArg,
+         applyGenerationRules } from './parser';
 
 
 
@@ -43,7 +45,6 @@ export function charSequence<C, R>(
         });
     });
 }
-// TODO: <T> version
 
 
 export function charClass<C, R>(
@@ -51,7 +52,6 @@ export function charClass<C, R>(
         ): (...needles: string[]) => StringParserFnWithCtx<C, R> {
 
     // NOTE: needles[i] should be one character. surrogate pair and/or ligature are accepted.
-    // NOTE: <T> version `needles` type is `T`.
     return ((...needles) => {
         return (input => {
             const src = input.src.slice(input.start, input.end);
@@ -84,7 +84,6 @@ export function charClass<C, R>(
         });
     });
 }
-// TODO: <T> version
 
 
 export function charClassNot<C, R>(
@@ -92,7 +91,6 @@ export function charClassNot<C, R>(
     ): (...needles: string[]) => StringParserFnWithCtx<C, R> {
 
     // NOTE: needles[i] should be one character. surrogate pair and/or ligature are accepted.
-    // NOTE: <T> version `needles` type is `T`.
     return ((...needles) => {
         return (input => {
             const src = input.src.slice(input.start, input.end);
@@ -134,7 +132,6 @@ export function charClassNot<C, R>(
         });
     });
 }
-// TODO: <T> version
 
 
 export function charClassByNeedleFn<C, R>(
@@ -142,7 +139,6 @@ export function charClassByNeedleFn<C, R>(
         ): (needle: (src: string) => number) => StringParserFnWithCtx<C, R> {
 
     // NOTE: needles[i] should be one character. surrogate pair and/or ligature are accepted.
-    // NOTE: <T> version `needles` type is `T`.
     return (needle => {
         return (input => {
             const src = input.src.slice(input.start, input.end);
@@ -167,7 +163,6 @@ export function charClassByNeedleFn<C, R>(
         });
     });
 }
-// TODO: <T> version
 
 
 export function getStringParsers<C, R>(
@@ -322,5 +317,6 @@ export function getStringParsers<C, R>(
         erase: transform<string, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),
         preread,
+        rules: (args: ApplyGenerationRulesArg<string, C, R>) => applyGenerationRules(args),
     });
 }

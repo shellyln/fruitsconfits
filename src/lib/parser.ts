@@ -5,6 +5,7 @@
 
 import { ParserInputWithCtx,
          ParseError,
+         parserInput,
          ParserFnFailedResult,
          ParserFnWithCtx } from './types';
 
@@ -270,7 +271,7 @@ export function or<T extends ArrayLike<T[number]>, C, R>(
 
 
 export function transform<T extends ArrayLike<T[number]>, C, R>(
-        trans?: ((tokens: R[]) => R[]), ctxTrans?: ((context: C) => C)
+        trans?: ((tokens: R[], input: ParserInputWithCtx<T, C>) => R[]), ctxTrans?: ((context: C) => C)
         ): (...parsers: Array<ParserFnWithCtx<T, C, R>>) => ParserFnWithCtx<T, C, R> {
 
     return ((...parsers) => {
@@ -287,6 +288,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                 tokens.push(...x.tokens);
             };
 
+            const t2 = trans ? trans(tokens, input) : tokens;
             return ({
                 succeeded: true,
                 next: ctxTrans ? {
@@ -295,7 +297,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                     end: next.end,
                     context: ctxTrans(next.context),
                 } : next,
-                tokens: trans ? trans(tokens) : tokens,
+                tokens: t2,
             });
         });
     });
@@ -329,6 +331,91 @@ export function preread<T extends ArrayLike<T[number]>, C, R>(
             succeeded: true,
             next: input,
             tokens: [],
+        });
+    });
+}
+
+
+export type ApplyGenerationRulesArg<T extends ArrayLike<T[number]>, C, R> = {
+    rules: Array<ParserFnWithCtx<R[], C, R> |
+           {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,
+    maxApply?: number,
+    check: ParserFnWithCtx<R[], C, R>,
+};
+
+export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
+        args: ApplyGenerationRulesArg<T, C, R>
+        ): (lexer: ParserFnWithCtx<T, C, R>) => ParserFnWithCtx<T, C, R> {
+
+    return (lexer => {
+        return (lexerInput => {
+            const lexResult = lexer(lexerInput);
+            if (! lexResult.succeeded) {
+                return lexResult;
+            }
+
+            const input = parserInput<R[], C>(lexResult.tokens, lexerInput.context);
+            let next = input;
+            let completed = false;
+
+            if (args.check(next).succeeded) {
+                return ({
+                    succeeded: true,
+                    next: lexResult.next,
+                    tokens: lexResult.tokens,
+                });
+            }
+
+            completed: for (let i = 0;
+                    args.maxApply !== void 0 ? i < args.maxApply : true; i++) {
+                let matched = false;
+
+                rules: for (const rule of args.rules) {
+                    const {parser, rtol} =
+                        typeof rule === 'function' ?
+                            {parser: rule, rtol: false} : rule;
+                    const len = next.src.length;
+
+                    for (let s = 0; s <= len; s++) {
+                        const x = parser({
+                            src: next.src,
+                            start: rtol ? len - s : s,
+                            end: next.src.length,
+                            context: next.context,
+                        });
+                        if (x.succeeded) {
+                            matched = true;
+                            const nextSrc = next.src.slice(0, s).concat(...x.tokens, ...next.src.slice(x.next.start));
+                            next = {
+                                src: nextSrc,
+                                start: 0,
+                                end: nextSrc.length,
+                                context: x.next.context,
+                            };
+                            if (args.check(next).succeeded) {
+                                completed = true;
+                                break completed;
+                            }
+                            break rules;
+                        }
+                    }
+                }
+
+                if (! matched) {
+                    break;
+                }
+            }
+            if (! completed) {
+                if (! args.check(next).succeeded) {
+                    throw new ParseError(makeErrorMessage(input));
+                }
+            }
+
+            return ({
+                succeeded: true,
+                next: lexResult.next,
+                tokens: next.src,
+            });
         });
     });
 }

@@ -3,8 +3,9 @@
 // https://github.com/shellyln
 
 
-import { parserInput }      from '../../lib/types';
+import { parserInput, ParserFnWithCtx }      from '../../lib/types';
 import { getStringParsers } from '../../lib/string-parser';
+import { getObjectParsers } from '../../lib/object-parser';
 
 
 
@@ -16,12 +17,18 @@ type Ast = {token: string, type?: string, value?: AstValuesT};
 
 const {seq, cls, notCls, clsFn, classes, cat,
         once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, preread} = getStringParsers<Ctx, Ast>({
+        first, or, combine, erase, trans, preread, rules} = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => ({token: rawToken}),
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
 });
 
+const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
+    rawToToken: rawToken => rawToken,
+    concatTokens: tokens => (tokens.length ?
+        [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
+    comparator: (a, b) => a.type === b.type && a.value === b.value,
+});
 
 
 const lineComment =
@@ -243,7 +250,7 @@ const listValue = combine(first(
                 erase(repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      atomValue),
+                      input => constExpr(first(seq(','), seq(']')))(input),),
                 erase(repeat(commentOrSpace)),)),
             repeat(combine(
                 erase(repeat(commentOrSpace),
@@ -251,7 +258,7 @@ const listValue = combine(first(
                       repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      atomValue),
+                      input => constExpr(first(seq(','), seq(']')))(input),),
                 erase(repeat(commentOrSpace)),)),
             qty(0, 1)(erase(
                 seq(','),
@@ -270,7 +277,7 @@ const objectKeyValuePair =
               repeat(commentOrSpace)),
         first(input => listValue(input),   // NOTE: recursive definitions
               input => objectValue(input), //       should place as lambda.
-              atomValue,
+              input => constExpr(first(seq(','), seq('}')))(input),
               err('object value is needed.')),
     );
 
@@ -309,9 +316,47 @@ const objectValue = combine(first(
 ));
 
 
+const constExprRule1 = $o.trans(tokens => [tokens[1]])(
+    $o.clsFn(t => t.token === '('),
+    $o.clsFn(t => t.type === 'value'),
+    $o.clsFn(t => t.token === ')'),
+);
+
+const constExprRule2 = $o.trans(tokens => [{token: '*', type: 'value',
+        value: (tokens[0].value as number) * (tokens[2].value as number)}])(
+    $o.clsFn(t => t.type === 'value'),
+    $o.clsFn(t => t.token === '*'),
+    $o.clsFn(t => t.type === 'value'),
+);
+
+const constExprRule3 = $o.trans(tokens => [{token: '+', type: 'value',
+        value: (tokens[0].value as number) + (tokens[2].value as number)}])(
+    $o.clsFn(t => t.type === 'value'),
+    $o.clsFn(t => t.token === '+'),
+    $o.clsFn(t => t.type === 'value'),
+);
+
+const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
+    rules: [
+        constExprRule1,
+        constExprRule2,
+        constExprRule3,
+    ],
+    check: $o.combine($o.classes.any, $o.end()),
+})(combine(
+    qty(1)(first(
+        erase(commentOrSpace),
+        atomValue,
+        trans(tokens => [{
+            token: tokens[0].token, type: 'op', value: tokens[0].token}])(
+            cls('*', '+', '(', ')'),))),
+    preread(repeat(commentOrSpace), edge),
+));
+
+
 const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
-    first(listValue, objectValue, atomValue),
+    first(listValue, objectValue, constExpr(end())),
     erase(repeat(commentOrSpace)),
     end(),
 );
