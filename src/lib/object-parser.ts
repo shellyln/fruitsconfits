@@ -14,7 +14,7 @@ import { makeMessage,
          or,
          transform,
          preread,
-         applyGenerationRules } from './parser';
+         applyProductionRules } from './parser';
 
 
 
@@ -211,6 +211,6 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         erase: transform<T, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),
         preread,
-        rules: applyGenerationRules,
+        rules: applyProductionRules,
     });
 }

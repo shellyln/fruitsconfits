@@ -344,7 +344,7 @@ const binaryOp = (op: string, op1: any, op2: any) => {
 //     });
 // };
 
-// generation rule:
+// production rule:
 //   S -> "(" E ")"
 const constExprRule20 = $o.trans(tokens => [tokens[1]])(
     $o.clsFn(t => t.token === '('),
@@ -352,7 +352,7 @@ const constExprRule20 = $o.trans(tokens => [tokens[1]])(
     $o.clsFn(t => t.token === ')'),
 );
 
-// generation rule:
+// production rule:
 //   S -> S "**" S
 const constExprRule15 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
         value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
@@ -361,7 +361,7 @@ const constExprRule15 = $o.trans(tokens => [{token: tokens[1].token, type: 'valu
     $o.clsFn(t => t.type === 'value'),
 );
 
-// generation rules:
+// production rules:
 //   S -> S "*" S
 //   S -> S "/" S
 //   S -> S "%" S
@@ -372,7 +372,7 @@ const constExprRule14 = $o.trans(tokens => [{token: tokens[1].token, type: 'valu
     $o.clsFn(t => t.type === 'value'),
 );
 
-// generation rules:
+// production rules:
 //   S -> S "+" S
 //   S -> S "-" S
 const constExprRule13 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',

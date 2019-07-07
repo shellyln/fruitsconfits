@@ -336,15 +336,15 @@ export function preread<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
-export type ApplyGenerationRulesArg<T extends ArrayLike<T[number]>, C, R> = {
+export type ApplyProductionRulesArg<T extends ArrayLike<T[number]>, C, R> = {
     rules: Array<ParserFnWithCtx<R[], C, R> |
            {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,
     maxApply?: number,
     check: ParserFnWithCtx<R[], C, R>,
 };
 
-export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
-        args: ApplyGenerationRulesArg<T, C, R>
+export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
+        args: ApplyProductionRulesArg<T, C, R>
         ): (lexer: ParserFnWithCtx<T, C, R>) => ParserFnWithCtx<T, C, R> {
 
     return (lexer => {
