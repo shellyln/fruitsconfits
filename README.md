@@ -3,6 +3,14 @@
 
 <img src="https://raw.githubusercontent.com/shellyln/fruitsconfits/master/docs/images/logo.svg?sanitize=true" title="logo" style="width: 200px">
 
+
+[![npm](https://img.shields.io/npm/v/fruitsconfits.svg)](https://www.npmjs.com/package/fruitsconfits)
+[![GitHub release](https://img.shields.io/github/release/shellyln/fruitsconfits.svg)](https://github.com/shellyln/fruitsconfits/releases)
+[![Travis](https://img.shields.io/travis/shellyln/fruitsconfits/master.svg)](https://travis-ci.org/shellyln/fruitsconfits)
+[![GitHub forks](https://img.shields.io/github/forks/shellyln/fruitsconfits.svg?style=social&label=Fork)](https://github.com/shellyln/fruitsconfits/fork)
+[![GitHub stars](https://img.shields.io/github/stars/shellyln/fruitsconfits.svg?style=social&label=Star)](https://github.com/shellyln/fruitsconfits)
+
+
 ## Install
 
 ```sh
