@@ -155,7 +155,7 @@ export function objClassByNeedleFn<T extends ArrayLike<T[number]>, C, R>(
     return (needle => {
         return (input => {
             const len = Math.max(0, input.end - input.start);
-            const matched = len >= 0 ? needle(input.src[input.start]) : false;
+            const matched = len > 0 ? needle(input.src[input.start]) : false;
 
             return (matched ? {
                 succeeded: true,

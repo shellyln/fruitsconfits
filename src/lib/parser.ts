@@ -358,6 +358,14 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
             let next = input;
             let completed = false;
 
+            if (args.check(next).succeeded) {
+                return ({
+                    succeeded: true,
+                    next: lexResult.next,
+                    tokens: lexResult.tokens,
+                });
+            }
+
             completed: for (let i = 0;
                     args.maxApply !== void 0 ? i < args.maxApply : true; i++) {
                 let matched = false;
@@ -377,7 +385,13 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
                         });
                         if (x.succeeded) {
                             matched = true;
-                            next = x.next;
+                            const nextSrc = next.src.slice(0, s).concat(...x.tokens, ...next.src.slice(x.next.start));
+                            next = {
+                                src: nextSrc,
+                                start: 0,
+                                end: nextSrc.length,
+                                context: x.next.context,
+                            };
                             if (args.check(next).succeeded) {
                                 completed = true;
                                 break completed;
@@ -400,7 +414,7 @@ export function applyGenerationRules<T extends ArrayLike<T[number]>, C, R>(
             return ({
                 succeeded: true,
                 next: lexResult.next,
-                tokens: lexResult.tokens,
+                tokens: next.src,
             });
         });
     });
