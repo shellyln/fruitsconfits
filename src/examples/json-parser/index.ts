@@ -3,7 +3,9 @@
 // https://github.com/shellyln
 
 
-import { parserInput, ParserFnWithCtx }      from '../../lib/types';
+import { ParseError,
+         parserInput,
+         ParserFnWithCtx }  from '../../lib/types';
 import { getStringParsers } from '../../lib/string-parser';
 import { getObjectParsers } from '../../lib/object-parser';
 
@@ -316,31 +318,76 @@ const objectValue = combine(first(
 ));
 
 
-const constExprRule1 = $o.trans(tokens => [tokens[1]])(
+const binaryOp = (op: string, op1: any, op2: any) => {
+    switch (op) {
+    case '**':
+        return op1 ** op2;
+    case '*':
+        return op1 * op2;
+    case '/':
+        return op1 / op2;
+    case '%':
+        return op1 % op2;
+    case '+':
+        return op1 + op2;
+    case '-':
+        return op1 - op2;
+    default:
+        throw new ParseError('Unknown operator has appeared.' + op);
+    }
+};
+// NOTE: Use the following function to return AST (abstract syntax tree).
+// const binaryOp = (op: string, op1: any, op2: any) => {
+//     return ({
+//         operator: op,
+//         operands: [op1, op2],
+//     });
+// };
+
+// generation rule:
+//   S -> "(" E ")"
+const constExprRule20 = $o.trans(tokens => [tokens[1]])(
     $o.clsFn(t => t.token === '('),
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === ')'),
 );
 
-const constExprRule2 = $o.trans(tokens => [{token: '*', type: 'value',
-        value: (tokens[0].value as number) * (tokens[2].value as number)}])(
+// generation rule:
+//   S -> S "**" S
+const constExprRule15 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
-    $o.clsFn(t => t.token === '*'),
+    $o.clsFn(t => t.token === '**'),
     $o.clsFn(t => t.type === 'value'),
 );
 
-const constExprRule3 = $o.trans(tokens => [{token: '+', type: 'value',
-        value: (tokens[0].value as number) + (tokens[2].value as number)}])(
+// generation rules:
+//   S -> S "*" S
+//   S -> S "/" S
+//   S -> S "%" S
+const constExprRule14 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
-    $o.clsFn(t => t.token === '+'),
+    $o.clsFn(t => t.token === '*' || t.token === '/' || t.token === '%'),
+    $o.clsFn(t => t.type === 'value'),
+);
+
+// generation rules:
+//   S -> S "+" S
+//   S -> S "-" S
+const constExprRule13 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
+    $o.clsFn(t => t.type === 'value'),
+    $o.clsFn(t => t.token === '+' || t.token === '-'),
     $o.clsFn(t => t.type === 'value'),
 );
 
 const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
     rules: [
-        constExprRule1,
-        constExprRule2,
-        constExprRule3,
+        constExprRule20,
+        constExprRule15,
+        constExprRule14,
+        constExprRule13,
     ],
     check: $o.combine($o.classes.any, $o.end()),
 })(combine(
@@ -349,7 +396,7 @@ const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
         atomValue,
         trans(tokens => [{
             token: tokens[0].token, type: 'op', value: tokens[0].token}])(
-            cls('*', '+', '(', ')'),))),
+            cls('**', '*', '/', '%', '+', '-', '(', ')'),))),
     preread(repeat(commentOrSpace), edge),
 ));
 
