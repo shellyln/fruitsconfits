@@ -1,7 +1,7 @@
 # FruitsConfits
 ### A well typed parser combinator framework for TypeScript/JavaScript.
 
-<img src="https://raw.githubusercontent.com/shellyln/fruitconfits/master/contents/docs/images/logo.svg?sanitize=true" title="logo" style="width: 200px">
+<img src="https://raw.githubusercontent.com/shellyln/fruitsconfits/master/docs/images/logo.svg?sanitize=true" title="logo" style="width: 200px">
 
 ## Install
 
