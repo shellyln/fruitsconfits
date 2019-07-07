@@ -21,8 +21,103 @@ npm install fruitsconfits
 
 * Build a lexer or parser for a string or object list by parser combinator.
 * The parser can receive user data context and acts as a reducer.
+* Sugar sweet API syntaxes.
 
-## APIs
+## High level APIs
+
+### getStringParsers(params)
+Get the string parser generators.
+
+```ts
+export function getStringParsers<C, R>(
+        params: {
+            rawToToken: (rawToken: string) => R,
+            concatTokens: (tokens: R[]) => R[],
+        });
+```
+
+#### params
+* rawToToken : function to convert string token to AST element.
+* concatTokens : function to merge two AST elements into one AST element.
+
+#### returns
+returns an object that containing the parsers.
+* seq
+* cls
+* notCls
+* clsFn
+* classes
+  * alpha
+  * upper
+  * lower
+  * num
+  * nonzero
+  * bin
+  * oct
+  * hex
+  * alnum
+  * space
+  * ctrl
+  * newline
+  * word
+  * any
+* cat
+* once
+* repeat
+* qty
+* zeroWidth
+* err
+* beginning
+* end
+* first
+* or
+* combine
+* erase
+* trans
+* preread
+* rules
+
+
+### getObjectParsers(params)
+Get the object list parser generators.
+
+```ts
+export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
+        params: {
+            rawToToken: (rawToken: T[number]) => R,
+            concatTokens: (tokens: R[]) => R[],
+            comparator: (a: T[number], b: T[number]) => boolean,
+        });
+```
+
+#### params
+* rawToToken : function to convert the input object list item to AST element.
+* concatTokens : function to merge two AST elements into one AST element.
+* comparator : function to compare two input object list items.
+
+#### returns
+returns an object that containing the parsers.
+* seq
+* cls
+* notCls
+* clsFn
+* classes
+  * any
+* cat
+* once
+* repeat
+* qty
+* zeroWidth
+* err
+* beginning
+* end
+* first
+* or
+* combine
+* erase
+* trans
+* preread
+* rules
 
 
 ## Examples
