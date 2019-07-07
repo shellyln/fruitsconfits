@@ -94,14 +94,10 @@ const nanValue =
     (seq('NaN'));
 
 
-const octNum =
-    cls('0', '1', '2', '3', '4', '5', '6', '7');
-const octNumSep =
-    cls('0', '1', '2', '3', '4', '5', '6', '7', '_');
-const hexAlpha =
-    cls('A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f');
-const hexAlphaSep =
-    cls('A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', '_');
+const octSep =
+    first(classes.oct, cls('_'));
+const hexSep =
+    first(classes.hex, cls('_'));
 
 const binaryIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -113,13 +109,13 @@ const octetIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 8)}])
     (erase(first(seq('0o'), seq('0'))),
-        cat(qty(1)(octNumSep)));
+        cat(qty(1)(octSep)));
 
 const hexIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 16)}])
     (erase(first(seq('0x'), seq('0X'))),
-        cat(qty(1)(first(classes.num, hexAlphaSep))));
+        cat(qty(1)(hexSep)));
 
 const bigDecimalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -175,17 +171,17 @@ const stringEscapeSeq = first(
     trans(t => [{token: '\f'}])(seq('\\f')),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\u')),
-                qty(4, 4)(first(classes.num, hexAlpha)),)),
+                qty(4, 4)(classes.hex),)),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\u{')),
-                qty(1, 6)(first(classes.num, hexAlpha)),
+                qty(1, 6)(classes.hex),
                 erase(seq('}')),)),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\x')),
-                qty(2, 2)(first(classes.num, hexAlpha)),)),
+                qty(2, 2)(classes.hex),)),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 8))}])(
         cat(erase(seq('\\')),
-                qty(3, 3)(octNum),)));
+                qty(3, 3)(classes.oct),)));
 
 const signleQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',

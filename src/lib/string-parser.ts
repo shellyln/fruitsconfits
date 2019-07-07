@@ -225,6 +225,38 @@ export function getStringParsers<C, R>(
             ('1' <= c && c <= '9') ? c.length : -1);
     });
 
+    const isBinNum = clsFn(src => {
+        const p = src.codePointAt(0);
+        if (p === void 0) {
+            return -1;
+        }
+        const c = String.fromCodePoint(p);
+        return (
+            ('0' <= c && c <= '1') ? c.length : -1);
+    });
+
+    const isOctNum = clsFn(src => {
+        const p = src.codePointAt(0);
+        if (p === void 0) {
+            return -1;
+        }
+        const c = String.fromCodePoint(p);
+        return (
+            ('0' <= c && c <= '7') ? c.length : -1);
+    });
+
+    const isHexNum = clsFn(src => {
+        const p = src.codePointAt(0);
+        if (p === void 0) {
+            return -1;
+        }
+        const c = String.fromCodePoint(p);
+        return ((
+            ('A' <= c && c <= 'F') ||
+            ('a' <= c && c <= 'f') ||
+            ('0' <= c && c <= '9')) ? c.length : -1);
+    });
+
     const isAlNum = clsFn(src => {
         const p = src.codePointAt(0);
         if (p === void 0) {
@@ -296,6 +328,9 @@ export function getStringParsers<C, R>(
             lower: isLower,
             num: isNumber,
             nonzero: isNonZeroNumber,
+            bin: isBinNum,
+            oct: isOctNum,
+            hex: isHexNum,
             alnum: isAlNum,
             space: isSpace,
             ctrl: isControl,
