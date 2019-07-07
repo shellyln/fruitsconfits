@@ -322,18 +322,19 @@ const constExprRule1 = $o.trans(tokens => [tokens[1]])(
     $o.clsFn(t => t.token === ')'),
 );
 
-const constExprRule2 = $o.trans(tokens => [{token: '*', type: 'value', value: (tokens[0].value as number) * (tokens[2].value as number)}])(
+const constExprRule2 = $o.trans(tokens => [{token: '*', type: 'value',
+        value: (tokens[0].value as number) * (tokens[2].value as number)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === '*'),
     $o.clsFn(t => t.type === 'value'),
 );
 
-const constExprRule3 = $o.trans(tokens => [{token: '+', type: 'value', value: (tokens[0].value as number) + (tokens[2].value as number)}])(
+const constExprRule3 = $o.trans(tokens => [{token: '+', type: 'value',
+        value: (tokens[0].value as number) + (tokens[2].value as number)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === '+'),
     $o.clsFn(t => t.type === 'value'),
 );
-
 
 const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
     rules: [
