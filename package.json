@@ -2,7 +2,7 @@
   "name": "fruitsconfits",
   "private": false,
   "version": "0.0.1",
-  "description": "FruitsConfits - A well typed parser combinator framework for TypeScript/JavaScript.",
+  "description": "FruitsConfits - A well typed sugared parser combinator framework for TypeScript/JavaScript.",
   "keywords": ["parser", "parser-combinator", "parser-framework", "typescript"],
   "main": "./bin/index.js",
   "module": "./modules/index.js",
