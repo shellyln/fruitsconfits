@@ -288,6 +288,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                 tokens.push(...x.tokens);
             };
 
+            // TODO: report errors while transforming
             const t2 = trans ? trans(tokens, input) : tokens;
             return ({
                 succeeded: true,
