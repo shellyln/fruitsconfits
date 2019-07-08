@@ -26,6 +26,7 @@ import { charSequence,
          charClassByNeedleFn,
          getStringParsers } from '../lib/string-parser';
 import { getObjectParsers } from '../lib/object-parser';
+import { parse as parseCsv } from '../examples/csv-parser';
 import { parse as parseJson } from '../examples/json-parser';
 
 
@@ -92,6 +93,12 @@ describe("foo", function() {
     });
 
     it("foo4", function() {
+        const x = parseCsv('1, 2 2 ,3 3,4\n 5 , 6 , 7 , 8 \n\n" a , b , ""\n c  ","",9,"",');
+        console.log(JSON.stringify(x, void 0, 2));
+        expect(1).toEqual(1);
+    });
+
+    it("foo5", function() {
         const w = parseJson(`1234`);
         console.log(JSON.stringify(w, void 0, 2));
 

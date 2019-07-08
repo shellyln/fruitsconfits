@@ -57,10 +57,18 @@ returns an object that containing the parsers.
   * hex
   * alnum
   * space
+  * spaceWithinSingleLine
   * ctrl
   * newline
   * word
   * any
+* numbers
+  * bin
+  * oct
+  * hex
+  * int
+  * bigint
+  * float
 * cat
 * once
 * repeat
@@ -123,6 +131,7 @@ returns an object that containing the parsers.
 ## Examples
 
 * [JSON parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/json-parser/index.ts)
+* [CSV parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/csv-parser/index.ts)
 
 ## License
 [ISC](https://github.com/shellyln/fruitsconfits/blob/master/LICENSE.md)  
