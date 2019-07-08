@@ -95,6 +95,8 @@ const nanValue =
     (seq('NaN'));
 
 
+const binSep =
+    first(classes.bin, cls('_'));
 const octSep =
     first(classes.oct, cls('_'));
 const hexSep =
@@ -104,27 +106,35 @@ const binaryIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 2)}])
     (erase(seq('0b')),
-        cat(qty(1)(cls('0', '1', '_'))));
+        cat(once(classes.bin), repeat(binSep)));
 
 const octalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 8)}])
     (erase(first(seq('0o'), seq('0'))),
-        cat(qty(1)(octSep)));
+        cat(once(classes.oct), repeat(octSep)));
 
 const hexIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 16)}])
     (erase(first(seq('0x'), seq('0X'))),
-        cat(qty(1)(hexSep)));
+        cat(once(classes.hex), repeat(hexSep)));
+
+const decimalIntegerPart =
+    cat(qty(0, 1)(cls('+', '-')),
+        first(combine(once(classes.nonzero), repeat(first(classes.num, cls('_')))),
+              seq('0'),));
+
+const decimalIntegerValue =
+    trans(tokens => [{token: tokens[0].token, type: 'value',
+        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 10)}])
+    (decimalIntegerPart);
 
 const bigDecimalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
         value: BigInt(tokens[0].token.replace(/_/g, ''))}])
-    (cat(qty(0, 1)(cls('+', '-')),
-        first(combine(once(classes.nonzero), repeat(first(classes.num, cls('_')))),
-              seq('0'),),
-        erase(seq('n')),));
+    (cat(decimalIntegerPart,
+         erase(seq('n')),));
 
 const floatingPointNumberValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -136,13 +146,6 @@ const floatingPointNumberValue =
             qty(1)(first(classes.num, cls('_'))),)),
         qty(0, 1)(combine(cls('E', 'e'), qty(0, 1)(cls('+', '-')),
             first(combine(once(classes.nonzero), repeat(classes.num)), seq('0')),))));
-
-const decimalIntegerValue =
-    trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 10)}])
-    (cat(qty(0, 1)(cls('+', '-')),
-        first(combine(once(classes.nonzero), repeat(first(classes.num, cls('_')))),
-              seq('0'),)));
 
 const numberValue =
     first(octalIntegerValue,
