@@ -9,7 +9,7 @@ import { getStringParsers } from '../../lib/string-parser';
 
 
 type Ctx = undefined;
-type Ast = string | Array<any>;
+type Ast = string | any[];
 
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
@@ -54,5 +54,5 @@ export function parse(s: string) {
     if (! z.succeeded) {
         throw new Error(z.message);
     }
-    return z.tokens;
+    return z.tokens as string[][];
 }
