@@ -171,8 +171,16 @@ export function getStringParsers<C, R>(
             concatTokens: (tokens: R[]) => R[],
         }) {
 
+    const seq = charSequence<C, R>(params.rawToToken);
     const cls = charClass<C, R>(params.rawToToken);
+    const notCls = charClassNot<C, R>(params.rawToToken);
     const clsFn = charClassByNeedleFn<C, R>(params.rawToToken);
+    const cat = transform<string, C, R>(params.concatTokens);
+    const once = quantify<string, C, R>(1, 1);
+    const repeat = quantify<string, C, R>();
+    const qty = (min?: number, max?: number) => quantify<string, C, R>(min, max);
+    const combine = transform<string, C, R>();
+    const erase = transform<string, C, R>(tokens => []);
 
     const isAlpha = clsFn(src => {
         const p = src.codePointAt(0);
@@ -317,10 +325,43 @@ export function getStringParsers<C, R>(
         return c.length;
     });
 
+    
+    const binSep =
+        first(isBinNum, cls('_'));
+    const octSep =
+        first(isOctNum, cls('_'));
+    const hexSep =
+        first(isHexNum, cls('_'));
+
+    const binaryIntegerNumber = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+        combine(erase(first(...prefixes)),
+            cat(once(isBinNum), repeat(binSep)),);
+    const octalIntegerNumber = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+        combine(erase(first(...prefixes)),
+            cat(once(isOctNum), repeat(octSep)),);
+    const hexIntegerValue = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+        combine(erase(first(...prefixes)),
+            cat(once(isHexNum), repeat(hexSep)),);
+    const decimalIntegerNumber =
+        combine(qty(0, 1)(cls('+', '-')),
+            first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
+                seq('0'),));
+    const bigDecimalIntegerNumber =
+        combine(decimalIntegerNumber,
+            erase(seq('n')),);
+    const floatingPointNumber =
+        combine(cat(qty(0, 1)(cls('+', '-')),
+            first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
+                seq('0'),),
+            qty(0, 1)(combine(seq('.'),
+                qty(1)(first(isNumber, cls('_'))),)),
+            qty(0, 1)(combine(cls('E', 'e'), qty(0, 1)(cls('+', '-')),
+                first(combine(once(isNonZeroNumber), repeat(isNumber)), seq('0')),))));
+
     return ({
-        seq: charSequence<C, R>(params.rawToToken),
+        seq,
         cls,
-        notCls: charClassNot<C, R>(params.rawToToken),
+        notCls,
         clsFn,
         classes: {
             alpha: isAlpha,
@@ -338,18 +379,26 @@ export function getStringParsers<C, R>(
             word: isWord,
             any: isAny,
         },
-        cat: transform<string, C, R>(params.concatTokens),
-        once: quantify<string, C, R>(1, 1),
-        repeat: quantify<string, C, R>(),
-        qty: (min?: number, max?: number) => quantify<string, C, R>(min, max),
+        numbers: {
+            bin: binaryIntegerNumber,
+            oct: octalIntegerNumber,
+            hex: hexIntegerValue,
+            int: decimalIntegerNumber,
+            bigint: bigDecimalIntegerNumber,
+            float: floatingPointNumber,
+        },
+        cat,
+        once,
+        repeat,
+        qty,
         zeroWidth,
         err: zeroWidthError,
         beginning,
         end,
         first,
         or,
-        combine: transform<string, C, R>(),
-        erase: transform<string, C, R>(tokens => []),
+        combine,
+        erase,
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),
         preread,
         rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules(args),
