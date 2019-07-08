@@ -22,7 +22,7 @@ const {seq, cls, notCls, clsFn, classes, numbers, cat,
 
 
 const quoted = trans(input => input.length ? input : [''])(
-    erase(repeat(erase(classes.spaceWithinSingleLine)), cls('"')),
+    erase(repeat(classes.spaceWithinSingleLine), cls('"')),
     cat(repeat(first(
         trans(input => ['"'])(seq('""')),
         notCls('"'),
@@ -30,12 +30,11 @@ const quoted = trans(input => input.length ? input : [''])(
     erase(cls('"'), repeat(erase(classes.spaceWithinSingleLine))),);
 
 const nakid = trans(input => input.length ? input : [''])(
-    erase(repeat(erase(classes.spaceWithinSingleLine))),
+    erase(repeat(classes.spaceWithinSingleLine)),
     cat(repeat(first(
         erase(classes.spaceWithinSingleLine, preread(cls(',', '\r\n', '\n', '\r'))),
         notCls(',', '\r\n', '\n', '\r'),
-    ))),
-    erase(repeat(erase(classes.spaceWithinSingleLine))),);
+    ))),);
 
 const cell = first(quoted, nakid);
 
