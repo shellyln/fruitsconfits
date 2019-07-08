@@ -3,7 +3,7 @@
 // https://github.com/shellyln
 
 
-import { parserInput }  from '../../lib/types';
+import { parserInput }      from '../../lib/types';
 import { getStringParsers } from '../../lib/string-parser';
 
 
