@@ -77,12 +77,12 @@ returns an object that containing the parsers.
 * `err(message: string)`
 * `beginning(helper?: () => R)`
 * `end(helper?: () => R)`
-* `first(...parsers: ParserFnWithCtx<T, C, R>[])`
-* `or(...parsers: ParserFnWithCtx<T, C, R>[])`
-* `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
-* `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `first(...parsers: StringParserFnWithCtx<C, R>[])`
+* `or(...parsers: StringParserFnWithCtx<C, R>[])`
+* `combine(...parsers: StringParserFnWithCtx<C, R>[])`
+* `erase(...parsers: StringParserFnWithCtx<C, R>[])`
 * `trans(fn: (tokens: R[]) => R[]) => (...parsers: StringParserFnWithCtx<C, R>[])`
-* `ahead(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `ahead(...parsers: StringParserFnWithCtx<C, R>[])`
 * `rules(args: ApplyProductionRulesArg<string, C, R>) => (lexer: StringParserFnWithCtx<C, R>)`
 
 
