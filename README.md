@@ -37,53 +37,53 @@ export function getStringParsers<C, R>(
 ```
 
 #### params
-* rawToToken : function to convert string token to AST element.
-* concatTokens : function to merge two AST elements into one AST element.
+* `rawToToken` : function to convert string token to AST element.
+* `concatTokens` : function to merge two AST elements into one AST element.
 
 #### returns
 returns an object that containing the parsers.
-* seq
-* cls
-* notCls
-* clsFn
+* `seq(needle: string)`
+* `cls(...needles: string[])`
+* `notCls(...needles: string[])`
+* `clsFn(needle: (src: string) => number)`
 * classes
-  * alpha
-  * upper
-  * lower
-  * num
-  * nonzero
-  * bin
-  * oct
-  * hex
-  * alnum
-  * space
-  * spaceWithinSingleLine
-  * ctrl
-  * newline
-  * word
-  * any
+  * `alpha`
+  * `upper`
+  * `lower`
+  * `num`
+  * `nonzero`
+  * `bin`
+  * `oct`
+  * `hex`
+  * `alnum`
+  * `space`
+  * `spaceWithinSingleLine`
+  * `ctrl`
+  * `newline`
+  * `word`
+  * `any`
 * numbers
-  * bin
-  * oct
-  * hex
-  * int
-  * bigint
-  * float
-* cat
-* once
-* repeat
-* qty
-* zeroWidth
-* err
-* beginning
-* end
-* first
-* or
-* combine
-* erase
-* trans
-* preread
-* rules
+  * `bin(...prefixes: StringParserFnWithCtx<C, R>[])`
+  * `oct(...prefixes: StringParserFnWithCtx<C, R>[])`
+  * `hex(...prefixes: StringParserFnWithCtx<C, R>[])`
+  * `int`
+  * `bigint`
+  * `float`
+* `cat(...parsers: StringParserFnWithCtx<C, R>[])`
+* `once(parser: StringParserFnWithCtx<C, R>)`
+* `repeat(parser: StringParserFnWithCtx<C, R>)`
+* `qty(min?: number, max?: number) => (parser: StringParserFnWithCtx<C, R>)`
+* `zeroWidth(helper?: () => R)`
+* `err(message: string)`
+* `beginning(helper?: () => R)`
+* `end(helper?: () => R)`
+* `first(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `or(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `trans(fn: (tokens: R[]) => R[]) => (...parsers: StringParserFnWithCtx<C, R>[])`
+* `preread(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `rules(args: ApplyProductionRulesArg<string, C, R>) => (lexer: StringParserFnWithCtx<C, R>)`
 
 
 ### getObjectParsers(params)
@@ -99,33 +99,33 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
 ```
 
 #### params
-* rawToToken : function to convert the input object list item to AST element.
-* concatTokens : function to merge two AST elements into one AST element.
-* comparator : function to compare two input object list items.
+* `rawToToken` : function to convert the input object list item to AST element.
+* `concatTokens` : function to merge two AST elements into one AST element.
+* `comparator` : function to compare two input object list items.
 
 #### returns
 returns an object that containing the parsers.
-* seq
-* cls
-* notCls
-* clsFn
+* `seq(needle: T)`
+* `cls(...needles: T[number][])`
+* `notCls(...needles: T[number][])`
+* `clsFn(needle: (src: T[number]) => boolean)`
 * classes
-  * any
-* cat
-* once
-* repeat
-* qty
-* zeroWidth
-* err
-* beginning
-* end
-* first
-* or
-* combine
-* erase
-* trans
-* preread
-* rules
+  * `any`
+* `cat(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `once(parser: ParserFnWithCtx<T, C, R>)`
+* `repeat(parser: ParserFnWithCtx<T, C, R>)`
+* `qty(min?: number, max?: number) => (parser: ParserFnWithCtx<T, C, R>)`
+* `zeroWidth(helper?: () => R)`
+* `err(message: string)`
+* `beginning(helper?: () => R)`
+* `end(helper?: () => R)`
+* `first(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `or(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `trans(fn: (tokens: R[]) => R[]) => (...parsers: ParserFnWithCtx<T, C, R>[])`
+* `preread(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `rules(args: ApplyProductionRulesArg<T, C, R>) => (lexer: ParserFnWithCtx<T, C, R>)`
 
 
 ## Examples
