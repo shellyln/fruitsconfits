@@ -378,8 +378,8 @@ const constExprRule1 = $o.trans(tokens => [{token: tokens[1].token, type: 'value
 );
 
 const constExprOps = cls('**', '*', '/', '%', '+', '-');
-const opTransform = (ops: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [{
-    token: tokens[0].token, type: 'op', value: tokens[0].token}])(ops);
+const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [{
+    token: tokens[0].token, type: 'op', value: tokens[0].token}])(op);
 
 const constExprNested =
     (input: ParserInputWithCtx<string, Ctx>) => constExprInner(cls(')'), true)(input);
@@ -389,11 +389,11 @@ const constExprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: bo
     qty(1)(first(
         erase(commentOrSpace),
         atomValue,
-        opTransform(nested ? first(constExprOps, cls(',')) : constExprOps),
+        transformOp(nested ? first(constExprOps, cls(',')) : constExprOps),
         combine(
-            opTransform(cls('(')),
+            transformOp(cls('(')),
             constExprNested,
-            opTransform(cls(')')),
+            transformOp(cls(')')),
         ),
     )),
     ahead(repeat(commentOrSpace), edge),

@@ -178,6 +178,7 @@ export function getStringParsers<C, R>(
     const cat = transform<string, C, R>(params.concatTokens);
     const once = quantify<string, C, R>(1, 1);
     const repeat = quantify<string, C, R>();
+    // TODO: reduce unneccessary call for adding types.
     const qty = (min?: number, max?: number) => quantify<string, C, R>(min, max);
     const combine = transform<string, C, R>();
     const erase = transform<string, C, R>(tokens => []);
@@ -369,6 +370,7 @@ export function getStringParsers<C, R>(
             qty(0, 1)(combine(cls('E', 'e'), qty(0, 1)(cls('+', '-')),
                 first(combine(once(isNonZeroNumber), repeat(isNumber)), seq('0')),))));
 
+    // TODO: reduce unneccessary call for adding types.
     return ({
         seq,
         cls,
@@ -403,16 +405,16 @@ export function getStringParsers<C, R>(
         once,
         repeat,
         qty,
-        zeroWidth,
-        err: zeroWidthError,
-        beginning,
-        end,
-        first,
-        or,
+        zeroWidth: (helper?: () => R) => zeroWidth<string, C, R>(helper), // TODO:
+        err: (message: string) => zeroWidthError<string, C, R>(message),  // TODO:
+        beginning: (helper?: () => R) => beginning<string, C, R>(helper), // TODO:
+        end: (helper?: () => R) => end<string, C, R>(helper),             // TODO:
+        first: (...parsers: StringParserFnWithCtx<C, R>[]) => first<string, C, R>(...parsers), // TODO:
+        or: (...parsers: StringParserFnWithCtx<C, R>[]) => or<string, C, R>(...parsers),       // TODO:
         combine,
         erase,
-        trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),
-        ahead: readAhead,
-        rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules(args),
+        trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),                                 // TODO:
+        ahead: (...parsers: StringParserFnWithCtx<C, R>[]) => readAhead<string, C, R>(...parsers),        // TODO:
+        rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules<string, C, R>(args), // TODO:
     });
 }

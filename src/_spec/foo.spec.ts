@@ -71,7 +71,7 @@ describe("foo", function() {
             rawToToken: token => ({token}),
             concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
         });
-        const zw = zeroWidth<string, Ctx, Ast>(() => ({token: '@'}));
+        const zw = zeroWidth(() => ({token: '@'}));
 
         const parse = combine(
             cat(seq('Hello'), seq(','),),

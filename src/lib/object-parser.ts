@@ -14,6 +14,7 @@ import { makeMessage,
          or,
          transform,
          readAhead,
+         ApplyProductionRulesArg,
          applyProductionRules } from './parser';
 
 
@@ -189,6 +190,7 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
 
     const isAny = clsFn(src => true);
 
+    // TODO: reduce unneccessary call for adding types.
     return ({
         seq: objSequence<T, C, R>(params.rawToToken, params.comparator),
         cls: objClass<T, C, R>(params.rawToToken, params.comparator),
@@ -200,17 +202,17 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         cat: transform<T, C, R>(params.concatTokens),
         once: quantify<T, C, R>(1, 1),
         repeat: quantify<T, C, R>(),
-        qty: (min?: number, max?: number) => quantify<T, C, R>(min, max),
-        zeroWidth,
-        err: zeroWidthError,
-        beginning,
-        end,
-        first,
-        or,
+        qty: (min?: number, max?: number) => quantify<T, C, R>(min, max), // TODO:
+        zeroWidth: (helper?: () => R) => zeroWidth<T, C, R>(helper),      // TODO:
+        err: (message: string) => zeroWidthError<T, C, R>(message),       // TODO:
+        beginning: (helper?: () => R) => beginning<T, C, R>(helper),      // TODO:
+        end: (helper?: () => R) => end<T, C, R>(helper),                  // TODO:
+        first: (...parsers: ParserFnWithCtx<T, C, R>[]) => first<T, C, R>(...parsers), // TODO:
+        or: (...parsers: ParserFnWithCtx<T, C, R>[]) => or<T, C, R>(...parsers),       // TODO:
         combine: transform<T, C, R>(),
         erase: transform<T, C, R>(tokens => []),
-        trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),
-        ahead: readAhead,
-        rules: applyProductionRules,
+        trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),                            // TODO:
+        ahead: (...parsers: ParserFnWithCtx<T, C, R>[]) => readAhead<T, C, R>(...parsers),      // TODO:
+        rules: (args: ApplyProductionRulesArg<T, C, R>) => applyProductionRules<T, C, R>(args), // TODO:
     });
 }
