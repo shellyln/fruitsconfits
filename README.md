@@ -82,7 +82,7 @@ returns an object that containing the parsers.
 * `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `trans(fn: (tokens: R[]) => R[]) => (...parsers: StringParserFnWithCtx<C, R>[])`
-* `preread(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `ahead(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `rules(args: ApplyProductionRulesArg<string, C, R>) => (lexer: StringParserFnWithCtx<C, R>)`
 
 
@@ -124,7 +124,7 @@ returns an object that containing the parsers.
 * `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `trans(fn: (tokens: R[]) => R[]) => (...parsers: ParserFnWithCtx<T, C, R>[])`
-* `preread(...parsers: ParserFnWithCtx<T, C, R>[])`
+* `ahead(...parsers: ParserFnWithCtx<T, C, R>[])`
 * `rules(args: ApplyProductionRulesArg<T, C, R>) => (lexer: ParserFnWithCtx<T, C, R>)`
 
 

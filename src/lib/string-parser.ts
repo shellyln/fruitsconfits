@@ -13,7 +13,7 @@ import { makeMessage,
          first,
          or,
          transform,
-         preread,
+         readAhead,
          ApplyProductionRulesArg,
          applyProductionRules } from './parser';
 
@@ -412,7 +412,7 @@ export function getStringParsers<C, R>(
         combine,
         erase,
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),
-        preread,
+        ahead: readAhead,
         rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules(args),
     });
 }

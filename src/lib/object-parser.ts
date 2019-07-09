@@ -13,7 +13,7 @@ import { makeMessage,
          first,
          or,
          transform,
-         preread,
+         readAhead,
          applyProductionRules } from './parser';
 
 
@@ -210,7 +210,7 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         combine: transform<T, C, R>(),
         erase: transform<T, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),
-        preread,
+        ahead: readAhead,
         rules: applyProductionRules,
     });
 }

@@ -313,7 +313,7 @@ export function combine<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
-export function preread<T extends ArrayLike<T[number]>, C, R>(
+export function readAhead<T extends ArrayLike<T[number]>, C, R>(
         ...parsers: Array<ParserFnWithCtx<T, C, R>>
         ): ParserFnWithCtx<T, C, R> {
 

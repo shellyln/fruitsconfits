@@ -20,7 +20,7 @@ type Ast = {token: string, type?: string, value?: AstValuesT};
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
         once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, preread, rules} = getStringParsers<Ctx, Ast>({
+        first, or, combine, erase, trans, ahead, rules} = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => ({token: rawToken}),
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
@@ -243,7 +243,7 @@ const listValue = combine(first(
             qty(0, 1)(erase(
                 seq(','),
                 repeat(commentOrSpace),)),
-            first(preread(seq(']')), err('Unexpected token has appeared.')),
+            first(ahead(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
     )
 ));
@@ -290,7 +290,7 @@ const objectValue = combine(first(
             qty(0, 1)(erase(
                 seq(','),
                 repeat(commentOrSpace),)),
-            first(preread(seq('}')), err('Unexpected token has appeared.')),
+            first(ahead(seq('}')), err('Unexpected token has appeared.')),
         erase(seq('}')),
     )
 ));
@@ -396,7 +396,7 @@ const constExprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: bo
             opTransform(cls(')')),
         ),
     )),
-    preread(repeat(commentOrSpace), edge),
+    ahead(repeat(commentOrSpace), edge),
 );
 
 const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({

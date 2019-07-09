@@ -14,7 +14,7 @@ type Ast = string | any[];
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
         once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, preread, rules} = getStringParsers<Ctx, Ast>({
+        first, or, combine, erase, trans, ahead, rules} = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => a as any + b as any)] : []),
@@ -32,7 +32,7 @@ const quoted = trans(input => input.length ? input : [''])(
 const nakid = trans(input => input.length ? input : [''])(
     erase(repeat(classes.spaceWithinSingleLine)),
     cat(repeat(first(
-        erase(classes.spaceWithinSingleLine, preread(cls(',', '\r\n', '\n', '\r'))),
+        erase(classes.spaceWithinSingleLine, ahead(cls(',', '\r\n', '\n', '\r'))),
         notCls(',', '\r\n', '\n', '\r'),
     ))),);
 
