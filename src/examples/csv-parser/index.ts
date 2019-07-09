@@ -9,15 +9,14 @@ import { getStringParsers } from '../../lib/string-parser';
 
 
 type Ctx = undefined;
-type Ast = string | any[];
+type Ast = string | string[];
 
 
-const {seq, cls, notCls, clsFn, classes, numbers, cat,
-        once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, ahead, rules} = getStringParsers<Ctx, Ast>({
+const {seq, cls, notCls, classes, cat,
+        repeat, end, first, combine, erase, trans, ahead} = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
-        [tokens.reduce((a, b) => a as any + b as any)] : []),
+        [tokens.reduce((a, b) => a as string + b as string)] : []),
 });
 
 
@@ -38,7 +37,7 @@ const nakid = trans(input => input.length ? input : [''])(
 
 const cell = first(quoted, nakid);
 
-const row = trans(input => [input])(
+const row = trans(input => [input as string[]])(
     cell,
     repeat(combine(erase(seq(',')), cell)),);
 

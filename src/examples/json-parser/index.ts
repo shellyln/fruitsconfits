@@ -212,7 +212,7 @@ const objKey =
     first(stringValue, symbolName);
 
 
-const listValue = combine(first(
+const listValue = first(
     trans(tokens => [{token: '[]', type: 'list', value: []}])(erase(
         seq('['),
             repeat(commentOrSpace),
@@ -246,7 +246,7 @@ const listValue = combine(first(
             first(ahead(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
     )
-));
+);
 
 
 const objectKeyValuePair =
@@ -261,7 +261,7 @@ const objectKeyValuePair =
               err('object value is needed.')),
     );
 
-const objectValue = combine(first(
+const objectValue = first(
     trans(tokens => [{token: '{}', type: 'object', value: {}}])(erase(
         seq('{'),
             repeat(commentOrSpace),
@@ -293,7 +293,7 @@ const objectValue = combine(first(
             first(ahead(seq('}')), err('Unexpected token has appeared.')),
         erase(seq('}')),
     )
-));
+);
 
 
 // const unaryOp = (op: string, op1: any) => {
