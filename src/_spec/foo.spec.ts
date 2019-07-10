@@ -119,11 +119,13 @@ describe("foo", function() {
             "foo":null,
             "bar":[
                 {
-                    "baz":[null,]// ffffffff ff aaaaa
+                    "baz":[null,[1,2,[],3]]// ffffffff ff aaaaa
                     /*
                     ggggggggggggggggggg ffffff
                     */
                    ,"zzz" : -5432,
+                   wwwwwww: {"p":7},
+                   wwwww: {},
                    qwerty: -4321.342e-1,
                    qqq:\`aa
                    a\\

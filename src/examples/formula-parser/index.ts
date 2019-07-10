@@ -125,3 +125,55 @@ const exprRule1 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
     $o.clsFn(t => t.token === ','),
     $o.clsFn(t => t.type === 'value'),
 );
+
+
+const exprOps = cls('**', '*', '/', '%', '+', '-');
+const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [{
+    token: tokens[0].token, type: 'op', value: tokens[0].token}])(op);
+
+const exprNested =
+    (input: ParserInputWithCtx<string, Ctx>) => exprInner(cls(')'), true)(input);
+
+const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean) =>
+        ParserFnWithCtx<string, undefined, Ast> = (edge, nested) => combine(
+    qty(1)(first(
+        erase(classes.space),
+        atomValue,
+        symbolName,
+        transformOp(nested ? first(exprOps, cls(',')) : exprOps),
+        combine(
+            transformOp(cls('(')),
+            exprNested,
+            transformOp(cls(')')),
+        ),
+    )),
+    ahead(repeat(classes.space), edge),
+);
+
+const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
+    rules: [
+        exprRule20,
+        exprRule15,
+        exprRule14,
+        exprRule13,
+        exprRule1,
+    ],
+    check: $o.combine($o.classes.any, $o.end()),
+})(exprInner(edge, false));
+
+
+const program = trans(tokens => tokens)(
+    erase(repeat(classes.space)),
+    expr(end()),
+    erase(repeat(classes.space)),
+    end(),
+);
+
+
+export function parse(s: string) {
+    const z = program(parserInput(s));
+    if (! z.succeeded) {
+        throw new Error(z.message);
+    }
+    return z.tokens[0].value;
+}
