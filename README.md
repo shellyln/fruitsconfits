@@ -43,9 +43,14 @@ export function getStringParsers<C, R>(
 #### returns
 returns an object that containing the parsers.
 * `seq(needle: string)`
+  * parser to match the sequence `needle`
 * `cls(...needles: string[])`
+  * parser to match the sequence classes `needles`
 * `notCls(...needles: string[])`
+  * parser to match the negation of sequence classes `needles`
 * `clsFn(needle: (src: string) => number)`
+  * parser to match the sequence class `needle`
+    * the class is defined by the lambda function
 * classes
   * `alpha`
   * `upper`
@@ -62,6 +67,7 @@ returns an object that containing the parsers.
   * `newline`
   * `word`
   * `any`
+    * parser to match the sequence class that matches to any token
 * numbers
   * `bin(...prefixes: StringParserFnWithCtx<C, R>[])`
   * `oct(...prefixes: StringParserFnWithCtx<C, R>[])`
@@ -70,20 +76,40 @@ returns an object that containing the parsers.
   * `bigint`
   * `float`
 * `cat(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser that combine and concatenate the parsing results of `parsers`
 * `once(parser: StringParserFnWithCtx<C, R>)`
+  * parser to match once to the parsing results of `parser`
 * `repeat(parser: StringParserFnWithCtx<C, R>)`
+  * parser to match zero or more times to the parsing results of `parser`
 * `qty(min?: number, max?: number) => (parser: StringParserFnWithCtx<C, R>)`
+  * parser to match min to max times to the parsing results of `parser`
+    * if min and max are ommitted, it is same as `repeat` parser
+    * if max is ommitted, it matches min or more times
 * `zeroWidth(helper?: () => R)`
+  * parser to match any zero width and return result that is provided by `helper`
 * `err(message: string)`
+  * parser to match any zero width and raise the error that has `message`
 * `beginning(helper?: () => R)`
+  * parser to match zero width beginning of input and return result that is provided by `helper`
 * `end(helper?: () => R)`
+  * parser to match zero width end of input and return result that is provided by `helper`
 * `first(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser to match the first matched parser in the `parsers`
 * `or(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser to match the most long matched parser in the `parsers`
 * `combine(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser that combine parsers `parsers`
 * `erase(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser that combine parsers `parsers` and return empty result `[]`
 * `trans(fn: (tokens: R[]) => R[]) => (...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser that combine parsers `parsers` and transform the result by `fn`
 * `ahead(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser to match zero width by reading ahead and matching with `parsers`
 * `rules(args: ApplyProductionRulesArg<string, C, R>) => (lexer: StringParserFnWithCtx<C, R>)`
+  * parser to match the production rules `args`
+    * args.rules : production rules
+    * args.maxApply : maximum number of production rules applied
+    * args.check : end condition of production rules
 
 
 ### getObjectParsers(params)
@@ -106,26 +132,52 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
 #### returns
 returns an object that containing the parsers.
 * `seq(needle: T)`
+  * parser to match the sequence `needle`
 * `cls(...needles: T[number][])`
+  * parser to match the sequence classes `needles`
 * `notCls(...needles: T[number][])`
+  * parser to match the negation of sequence classes `needles`
 * `clsFn(needle: (src: T[number]) => boolean)`
+  * parser to match the sequence class `needle`
+    * the class is defined by the lambda function
 * classes
   * `any`
+    * parser to match the sequence class that matches to any token
 * `cat(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser that combine and concatenate the parsing results of `parsers`
 * `once(parser: ParserFnWithCtx<T, C, R>)`
+  * parser to match once to the parsing results of `parser`
 * `repeat(parser: ParserFnWithCtx<T, C, R>)`
+  * parser to match zero or more times to the parsing results of `parser`
 * `qty(min?: number, max?: number) => (parser: ParserFnWithCtx<T, C, R>)`
+  * parser to match min to max times to the parsing results of `parser`
+    * if min and max are ommitted, it is same as `repeat` parser
+    * if max is ommitted, it matches min or more times
 * `zeroWidth(helper?: () => R)`
+  * parser to match any zero width and return result that is provided by `helper`
 * `err(message: string)`
+  * parser to match any zero width and raise the error that has `message`
 * `beginning(helper?: () => R)`
+  * parser to match zero width beginning of input and return result that is provided by `helper`
 * `end(helper?: () => R)`
+  * parser to match zero width end of input and return result that is provided by `helper`
 * `first(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser to match the first matched parser in the `parsers`
 * `or(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser to match the most long matched parser in the `parsers`
 * `combine(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser that combine parsers `parsers`
 * `erase(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser that combine parsers `parsers` and return empty result `[]`
 * `trans(fn: (tokens: R[]) => R[]) => (...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser that combine parsers `parsers` and transform the result by `fn`
 * `ahead(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser to match zero width by reading ahead and matching with `parsers`
 * `rules(args: ApplyProductionRulesArg<T, C, R>) => (lexer: ParserFnWithCtx<T, C, R>)`
+  * parser to match the production rules `args`
+    * args.rules : production rules
+    * args.maxApply : maximum number of production rules applied
+    * args.check : end condition of production rules
 
 
 ## Examples
