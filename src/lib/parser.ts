@@ -386,7 +386,7 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                         });
                         if (x.succeeded) {
                             matched = true;
-                            const nextSrc = next.src.slice(0, s);
+                            const nextSrc = next.src.slice(0, rtol ? len - s : s);
                             nextSrc.push(...x.tokens);
                             nextSrc.push(...next.src.slice(x.next.start));
                             next = {

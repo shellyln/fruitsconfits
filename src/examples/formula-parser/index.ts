@@ -111,12 +111,38 @@ const isValue = (v: any) => {
     return false;
 };
 
+
+const exprOps = cls('**', '*', '/', '%', '+', '-');
+const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
+    trans(tokens => [{op: tokens[0] as string}])(op);
+
+
+const beginningOrOp =
+    $o.first($o.beginning(() => ({op: '$noop'})), $o.clsFn(t => {
+        if (t) {
+            switch((t as any).op) {
+            case '**': case '*': case '/': case '%': case '+': case '-': case ',':
+                return true;
+            default:
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }));
+
+
 // production rule:
 //   beginning S -> beginning "(" E ")"
 //   op        S -> op        "(" E ")"
 const exprRule20 = $o.trans(tokens => {
-    return [tokens[1]]
+    if ((tokens[0] as SxOp).op === '$noop') {
+        return [tokens[2]];
+    } else {
+        return [tokens[0], tokens[2]];
+    }
 })(
+    beginningOrOp,
     $o.clsFn(t => isOperator(t, '(')),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ')')),
@@ -125,7 +151,13 @@ const exprRule20 = $o.trans(tokens => {
 // production rule:
 //   S -> S<<symbol>> "(" S ")"
 //   S -> S<<value>>  "(" S ")"
-const exprRule18 = $o.trans(tokens => [[tokens[0], tokens[2]]])(
+const exprRule18 = $o.trans(tokens => {
+    if (Array.isArray(tokens[2]) && liyad.isSymbol((tokens[2] as Ast[])[0], '$last')) {
+        return [[tokens[0], ...(tokens[2] as Ast[]).slice(1)]];
+    } else {
+        return [[tokens[0], tokens[2]]];
+    }
+})(
     $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false), $o.clsFn(t => isValue(t))),
     $o.clsFn(t => isOperator(t, '(')),
     $o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false), $o.clsFn(t => isValue(t))),
@@ -133,8 +165,25 @@ const exprRule18 = $o.trans(tokens => [[tokens[0], tokens[2]]])(
 );
 
 // production rule:
+//   beginning S -> beginning "+" S
+//   op        S -> op        "+" S
+//   beginning S -> beginning "-" S
+//   op        S -> op        "-" S
+const exprRule16 = $o.trans(tokens => {
+    if ((tokens[0] as SxOp).op === '$noop') {
+        return [unaryOp((tokens[1] as SxOp).op, tokens[2])];
+    } else {
+        return [tokens[0], unaryOp((tokens[1] as SxOp).op, tokens[2])];
+    }
+})(
+    beginningOrOp,
+    $o.clsFn(t => isOperator(t, '+') || isOperator(t, '-')),
+    $o.clsFn(t => isValue(t)),
+);
+
+// production rule:
 //   S -> S "**" S
-const exprRule15 = $o.trans(tokens => [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]])(
+const exprRule15 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '**')),
     $o.clsFn(t => isValue(t)),
@@ -170,10 +219,6 @@ const exprRule1 = $o.trans(tokens => {
 );
 
 
-const exprOps = cls('**', '*', '/', '%', '+', '-');
-const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
-    trans(tokens => [{op: tokens[0] as string}])(op);
-
 const exprNested =
     (input: ParserInputWithCtx<string, Ctx>) => exprInner(cls(')'), true)(input);
 
@@ -181,6 +226,7 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
         ParserFnWithCtx<string, undefined, Ast> = (edge, nested) => combine(
     qty(1)(first(
         erase(classes.space),
+        transformOp(combine(cls('+', '-'), ahead(classes.num))),
         atomValue,
         symbolName,
         transformOp(nested ? first(exprOps, cls(',')) : exprOps),
@@ -197,6 +243,7 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
     rules: [
         exprRule20,
         exprRule18,
+        { parser: exprRule16, rtol: true },
         exprRule15,
         exprRule14,
         exprRule13,

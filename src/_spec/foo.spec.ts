@@ -100,10 +100,10 @@ describe("foo", function() {
     });
 
     it("foo5", function() {
-        const code = '11 + 13,2 + 3 * 4 + 5 + (6,7,8)';
-        //const code = '11 + 13,2 + (3) * 4 + 5 + (6,7,8)';
-        //const code = '2 + (3) * 4 + 5 + (6,7,8) + 9+10';
-        //const code = '2 + (3) * 4 + 5 + (6,7,8) + 9';
+        const code = '11 + 13,2 + (3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)'; // 20
+        //                 24,2 +      12 + 5 +      8 +5+10-22
+        //                                          27 +5+10-22
+        //                                                42-22
         const x = parseFormula(code);
         console.log(JSON.stringify(x, void 0, 2));
         console.log(evaluateFormula(code))
