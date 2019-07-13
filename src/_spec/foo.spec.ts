@@ -27,6 +27,7 @@ import { charSequence,
          getStringParsers } from '../lib/string-parser';
 import { getObjectParsers } from '../lib/object-parser';
 import { parse as parseCsv } from '../examples/csv-parser';
+import { parse as parseFormula, evaluate as evaluateFormula } from '../examples/formula-parser';
 import { parse as parseJson } from '../examples/json-parser';
 
 
@@ -99,21 +100,43 @@ describe("foo", function() {
     });
 
     it("foo5", function() {
-        const w = parseJson(`1234`);
-        console.log(JSON.stringify(w, void 0, 2));
-
-        const x = parseJson(`{"foo":null,"bar":[],}`);
+        const code = '11 + 13,2 + 3 * 4 + 5 + (6,7,8)';
+        //const code = '11 + 13,2 + (3) * 4 + 5 + (6,7,8)';
+        //const code = '2 + (3) * 4 + 5 + (6,7,8) + 9+10';
+        //const code = '2 + (3) * 4 + 5 + (6,7,8) + 9';
+        const x = parseFormula(code);
         console.log(JSON.stringify(x, void 0, 2));
+        //console.log(evaluateFormula(code))
+        expect(1).toEqual(1);
+    });
 
-        const y = parseJson(`
+    it("foo6a", function() {
+        const src = `1234`;
+        const x = parseJson(src);
+        console.log(JSON.stringify(x, void 0, 2));
+        expect(x).toEqual(eval(src));
+    });
+
+    it("foo6b", function() {
+        const src = `{"foo":null,"bar":[],}`;
+        const x = parseJson(src);
+        console.log(JSON.stringify(x, void 0, 2));
+        expect(x).toEqual(eval('(' + src + ')'));
+    });
+
+    it("foo6c", function() {
+        const src = `
         {
             "foo" : null ,
             "bar" : [ null , 1 ,2, "aaaaaa", ] , 
-        } `);
-        console.log(JSON.stringify(y, void 0, 2));
+        } `;
+        const x = parseJson(src);
+        console.log(JSON.stringify(x, void 0, 2));
+        expect(x).toEqual(eval('(' + src + ')'));
+    });
 
-        // const z = parse(parserInput(`{"foo":null,"bar":[{"baz":[null,],},null,],}`, 1));
-        const z = parseJson(`
+    it("foo6d", function() {
+        const src = `
         # qqqqqqqqqqqqqq
         {
             "foo":null,
@@ -144,8 +167,13 @@ describe("foo", function() {
                 (7),                // ===  7
                 ((3)),              // ===  3
             ],
-        }`);
-        console.log(JSON.stringify(z, void 0, 2));
-        expect(1).toEqual(1);
+        }`;
+        // const z = parse(parserInput(`{"foo":null,"bar":[{"baz":[null,],},null,],}`, 1));
+        const x = parseJson(src);
+        console.log(JSON.stringify(x, void 0, 2));
+        expect(x).toEqual(eval('(' +
+            src.replace(/# /g, '// ')
+            .replace(/0555/, '0o555')
+            .replace(/\\256/, '\\xae') + ')'));
     });
 });

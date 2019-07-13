@@ -386,7 +386,10 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                         });
                         if (x.succeeded) {
                             matched = true;
-                            const nextSrc = next.src.slice(0, s).concat(...x.tokens, ...next.src.slice(x.next.start));
+                            // TODO: BUG: if x.tokens is array of array, nested array items are spreaded.
+                            const nextSrc = next.src.slice(0, s);
+                            nextSrc.push(...x.tokens);
+                            nextSrc.push(...next.src.slice(x.next.start));
                             next = {
                                 src: nextSrc,
                                 start: 0,
