@@ -115,12 +115,13 @@ const isValue = (v: any) => {
 const exprOpsTokens = ['**', '*', '/', '%', '+', '-'];
 const exprOps = cls(...exprOpsTokens);
 
+const edgeOpsTokens = exprOpsTokens.concat(',');
 const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
     trans(tokens => [{op: tokens[0] as string}])(op);
 
 const beginningOrOp =
     $o.first($o.beginning(() => ({op: '$noop'})),
-             $o.clsFn(t => t && exprOpsTokens.includes((t as any).op) ? true : false),);
+             $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false),);
 
 
 // production rule:
@@ -144,7 +145,7 @@ const exprRule18 = $o.trans(tokens => {
     if (Array.isArray(tokens[1]) && liyad.isSymbol((tokens[1] as Ast[])[0], '$last')) {
         return [[tokens[0], ...(tokens[1] as Ast[]).slice(1)]];
     } else {
-        return [[tokens[0], tokens[1]]];
+        return [[tokens[0], ...(tokens.length > 0 ? [tokens[1]] : [])]];
     }
 })(
     $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false),
@@ -218,7 +219,7 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
         transformOp(nested ? first(exprOps, cls(',')) : exprOps),
         combine(
             transformOp(cls('(')),
-            exprNested,
+            qty(0, 1)(exprNested),
             transformOp(cls(')')),
         ),
     )),
@@ -259,6 +260,8 @@ export function evaluate(s: string) {
     const z = parse(s);
     liyad.lisp.setGlobals({
         max: Math.max,
+        twice: (x: number) => x * 2,
+        one: () => 1,
     });
     return liyad.lisp.evaluateAST([z] as any);
 }
