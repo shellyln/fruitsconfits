@@ -145,7 +145,7 @@ const exprRule18 = $o.trans(tokens => {
     if (Array.isArray(tokens[1]) && liyad.isSymbol((tokens[1] as Ast[])[0], '$last')) {
         return [[tokens[0], ...(tokens[1] as Ast[]).slice(1)]];
     } else {
-        return [[tokens[0], ...(tokens.length > 0 ? [tokens[1]] : [])]];
+        return [[tokens[0], ...(tokens.length > 1 ? [tokens[1]] : [])]];
     }
 })(
     $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false),
