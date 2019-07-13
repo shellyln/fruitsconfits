@@ -138,19 +138,21 @@ const exprRule20 = $o.trans(tokens => {
 // production rule:
 //   S -> S<<symbol>> "(" S ")"
 //   S -> S<<value>>  "(" S ")"
+//   S -> S<<symbol>> "(" ")"
+//   S -> S<<value>>  "(" ")"
 const exprRule18 = $o.trans(tokens => {
-    if (Array.isArray(tokens[2]) && liyad.isSymbol((tokens[2] as Ast[])[0], '$last')) {
-        return [[tokens[0], ...(tokens[2] as Ast[]).slice(1)]];
+    if (Array.isArray(tokens[1]) && liyad.isSymbol((tokens[1] as Ast[])[0], '$last')) {
+        return [[tokens[0], ...(tokens[1] as Ast[]).slice(1)]];
     } else {
-        return [[tokens[0], tokens[2]]];
+        return [[tokens[0], tokens[1]]];
     }
 })(
     $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false),
              $o.clsFn(t => isValue(t)),),
-    $o.clsFn(t => isOperator(t, '(')),
-    $o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false),
-             $o.clsFn(t => isValue(t)),),
-    $o.clsFn(t => isOperator(t, ')')),
+    $o.erase($o.clsFn(t => isOperator(t, '('))),
+    $o.qty(0, 1)($o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false),
+                          $o.clsFn(t => isValue(t)),)),
+    $o.erase($o.clsFn(t => isOperator(t, ')'))),
 );
 
 // production rule:
@@ -255,5 +257,8 @@ export function parse(s: string) {
 
 export function evaluate(s: string) {
     const z = parse(s);
+    liyad.lisp.setGlobals({
+        max: Math.max,
+    });
     return liyad.lisp.evaluateAST([z] as any);
 }
