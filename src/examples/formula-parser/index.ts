@@ -149,7 +149,7 @@ const isValue = (v: any) => {
 //   beginning S -> beginning "(" E ")"
 //   op        S -> op        "(" E ")"
 const exprRule20 = $o.trans(tokens => {
-    return [tokens[1] /* TODO: BUG: if x.tokens is array of array, nested array items are spreaded. */   ]
+    return [tokens[1]]
 })(
     $o.clsFn(t => isOperator(t, '(')),
     $o.clsFn(t => isValue(t)),
@@ -159,9 +159,7 @@ const exprRule20 = $o.trans(tokens => {
 // production rule:
 //   S -> S<<symbol>> "(" S ")"
 //   S -> S<<value>>  "(" S ")"
-const exprRule18 = $o.trans(tokens => {
-    return [[tokens[0], tokens[2]]]
-})(
+const exprRule18 = $o.trans(tokens => [[tokens[0], tokens[2]]])(
     $o.first($o.clsFn(t => isSymbol(t)), $o.clsFn(t => isValue(t))),
     $o.clsFn(t => isOperator(t, '(')),
     $o.first($o.clsFn(t => Array.isArray(t) && isSymbol(t[0], '$last')), $o.clsFn(t => isValue(t))),
@@ -170,9 +168,7 @@ const exprRule18 = $o.trans(tokens => {
 
 // production rule:
 //   S -> S "**" S
-const exprRule15 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule15 = $o.trans(tokens => [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '**')),
     $o.clsFn(t => isValue(t)),
@@ -182,9 +178,7 @@ const exprRule15 = $o.trans(tokens => {
 //   S -> S "*" S
 //   S -> S "/" S
 //   S -> S "%" S
-const exprRule14 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule14 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '*') || isOperator(t, '/') || isOperator(t, '%')),
     $o.clsFn(t => isValue(t)),
@@ -193,9 +187,7 @@ const exprRule14 = $o.trans(tokens => {
 // production rules:
 //   S -> S "+" S
 //   S -> S "-" S
-const exprRule13 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule13 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '+') || isOperator(t, '-')),
     $o.clsFn(t => isValue(t)),
@@ -204,7 +196,7 @@ const exprRule13 = $o.trans(tokens => {
 // production rule:
 //   S -> S "," S
 const exprRule1 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
+    return [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]
 })(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ',')),

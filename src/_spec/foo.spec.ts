@@ -106,7 +106,7 @@ describe("foo", function() {
         //const code = '2 + (3) * 4 + 5 + (6,7,8) + 9';
         const x = parseFormula(code);
         console.log(JSON.stringify(x, void 0, 2));
-        //console.log(evaluateFormula(code))
+        console.log(evaluateFormula(code))
         expect(1).toEqual(1);
     });
 
