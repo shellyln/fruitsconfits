@@ -13,37 +13,14 @@ import * as liyad           from 'liyad';
 
 
 
-type AstValuesT = number | string | boolean | BigInt | null | object | Array<any> | undefined;
-
-export interface SxExternalValue {
-    value: any;
-}
-
-export interface SxOp {
+interface SxOp {
     'op': string;
 }
-export interface SxSymbol {
-    'symbol': string;
-}
 
-export interface SxComment {
-    comment: string;
-}
-
-export interface SxDottedPair {
-    car: SxToken; // left
-    cdr: SxToken; // right
-}
-
-export interface SxDottedFragment {
-    dotted: SxToken; // right
-}
-
-export type SxTokenChild = SxOp | SxSymbol | SxDottedPair | SxDottedFragment | SxComment | SxExternalValue | string | number | boolean | null | /*SxToken*/ any[];
-export type SxToken      = SxOp | SxSymbol | SxDottedPair | SxDottedFragment | SxComment | SxExternalValue | string | number | boolean | null | SxTokenChild[];
+type AstChild = liyad.SxTokenChild | SxOp;
 
 type Ctx = undefined;
-type Ast = SxToken;
+type Ast = liyad.SxToken | AstChild | SxOp;
 
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
@@ -96,13 +73,13 @@ const unaryOp = (op: string, op1: any) => {
 
 const binaryOp = (op: string, op1: any, op2: any) => {
     if (op === ',') {
-        const operands: SxToken[] = [];
-        if (Array.isArray(op1) && isSymbol(op1[0], '$last')) {
+        const operands: Ast[] = [];
+        if (Array.isArray(op1) && liyad.isSymbol(op1[0], '$last')) {
             operands.push(...op1.slice(1));
         } else {
             operands.push(op1);
         }
-        if (Array.isArray(op2) && isSymbol(op2[0], '$last')) {
+        if (Array.isArray(op2) && liyad.isSymbol(op2[0], '$last')) {
             operands.push(...op2.slice(1));
         } else {
             operands.push(op2);
@@ -114,17 +91,6 @@ const binaryOp = (op: string, op1: any, op2: any) => {
 
 const ternaryOp = (op: string, op1: any, op2: any, op3: any) => {
     return [{symbol: op}, op1, op2, op3];
-};
-
-const isSymbol = (x: any, name?: string) => {
-    if (x && typeof x === 'object' && Object.prototype.hasOwnProperty.call(x, 'symbol')) {
-        if (name !== void 0) {
-            return x.symbol === name ? x : null;
-        } else {
-            return x;
-        }
-    }
-    return null;
 };
 
 const isOperator = (v: any, op: string) => {
@@ -160,9 +126,9 @@ const exprRule20 = $o.trans(tokens => {
 //   S -> S<<symbol>> "(" S ")"
 //   S -> S<<value>>  "(" S ")"
 const exprRule18 = $o.trans(tokens => [[tokens[0], tokens[2]]])(
-    $o.first($o.clsFn(t => isSymbol(t)), $o.clsFn(t => isValue(t))),
+    $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false), $o.clsFn(t => isValue(t))),
     $o.clsFn(t => isOperator(t, '(')),
-    $o.first($o.clsFn(t => Array.isArray(t) && isSymbol(t[0], '$last')), $o.clsFn(t => isValue(t))),
+    $o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false), $o.clsFn(t => isValue(t))),
     $o.clsFn(t => isOperator(t, ')')),
 );
 
