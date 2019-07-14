@@ -13,37 +13,14 @@ import * as liyad           from 'liyad';
 
 
 
-type AstValuesT = number | string | boolean | BigInt | null | object | Array<any> | undefined;
-
-export interface SxExternalValue {
-    value: any;
-}
-
-export interface SxOp {
+interface SxOp {
     'op': string;
 }
-export interface SxSymbol {
-    'symbol': string;
-}
 
-export interface SxComment {
-    comment: string;
-}
-
-export interface SxDottedPair {
-    car: SxToken; // left
-    cdr: SxToken; // right
-}
-
-export interface SxDottedFragment {
-    dotted: SxToken; // right
-}
-
-export type SxTokenChild = SxOp | SxSymbol | SxDottedPair | SxDottedFragment | SxComment | SxExternalValue | string | number | boolean | null | /*SxToken*/ any[];
-export type SxToken      = SxOp | SxSymbol | SxDottedPair | SxDottedFragment | SxComment | SxExternalValue | string | number | boolean | null | SxTokenChild[];
+type AstChild = liyad.SxTokenChild | SxOp;
 
 type Ctx = undefined;
-type Ast = SxToken;
+type Ast = liyad.SxToken | AstChild | SxOp;
 
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
@@ -96,13 +73,13 @@ const unaryOp = (op: string, op1: any) => {
 
 const binaryOp = (op: string, op1: any, op2: any) => {
     if (op === ',') {
-        const operands: SxToken[] = [];
-        if (Array.isArray(op1) && isSymbol(op1[0], '$last')) {
+        const operands: Ast[] = [];
+        if (Array.isArray(op1) && liyad.isSymbol(op1[0], '$last')) {
             operands.push(...op1.slice(1));
         } else {
             operands.push(op1);
         }
-        if (Array.isArray(op2) && isSymbol(op2[0], '$last')) {
+        if (Array.isArray(op2) && liyad.isSymbol(op2[0], '$last')) {
             operands.push(...op2.slice(1));
         } else {
             operands.push(op2);
@@ -114,17 +91,6 @@ const binaryOp = (op: string, op1: any, op2: any) => {
 
 const ternaryOp = (op: string, op1: any, op2: any, op3: any) => {
     return [{symbol: op}, op1, op2, op3];
-};
-
-const isSymbol = (x: any, name?: string) => {
-    if (x && typeof x === 'object' && Object.prototype.hasOwnProperty.call(x, 'symbol')) {
-        if (name !== void 0) {
-            return x.symbol === name ? x : null;
-        } else {
-            return x;
-        }
-    }
-    return null;
 };
 
 const isOperator = (v: any, op: string) => {
@@ -145,12 +111,26 @@ const isValue = (v: any) => {
     return false;
 };
 
+
+const exprOpsTokens = ['**', '*', '/', '%', '+', '-', '?', ':'];
+const edgeOpsTokens = exprOpsTokens.concat(',');
+const exprOps = cls(...exprOpsTokens);
+
+const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
+    trans(tokens => [{op: tokens[0] as string}])(op);
+
+const beginningOrEdgeOp =
+    $o.first($o.beginning(() => ({op: '$noop'})),
+             $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false),);
+
+
 // production rule:
 //   beginning S -> beginning "(" E ")"
 //   op        S -> op        "(" E ")"
 const exprRule20 = $o.trans(tokens => {
-    return [tokens[1] /* TODO: BUG: if x.tokens is array of array, nested array items are spreaded. */   ]
+    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]), tokens[2]];
 })(
+    beginningOrEdgeOp,
     $o.clsFn(t => isOperator(t, '(')),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ')')),
@@ -159,20 +139,40 @@ const exprRule20 = $o.trans(tokens => {
 // production rule:
 //   S -> S<<symbol>> "(" S ")"
 //   S -> S<<value>>  "(" S ")"
+//   S -> S<<symbol>> "(" ")"
+//   S -> S<<value>>  "(" ")"
 const exprRule18 = $o.trans(tokens => {
-    return [[tokens[0], tokens[2]]]
+    if (Array.isArray(tokens[1]) && liyad.isSymbol((tokens[1] as Ast[])[0], '$last')) {
+        return [[tokens[0], ...(tokens[1] as Ast[]).slice(1)]];
+    } else {
+        return [[tokens[0], ...(tokens.length > 1 ? [tokens[1]] : [])]];
+    }
 })(
-    $o.first($o.clsFn(t => isSymbol(t)), $o.clsFn(t => isValue(t))),
-    $o.clsFn(t => isOperator(t, '(')),
-    $o.first($o.clsFn(t => Array.isArray(t) && isSymbol(t[0], '$last')), $o.clsFn(t => isValue(t))),
-    $o.clsFn(t => isOperator(t, ')')),
+    $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false),
+             $o.clsFn(t => isValue(t)),),
+    $o.erase($o.clsFn(t => isOperator(t, '('))),
+    $o.qty(0, 1)($o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false),
+                          $o.clsFn(t => isValue(t)),)),
+    $o.erase($o.clsFn(t => isOperator(t, ')'))),
+);
+
+// production rule:
+//   beginning S -> beginning "+" S
+//   op        S -> op        "+" S
+//   beginning S -> beginning "-" S
+//   op        S -> op        "-" S
+const exprRule16 = $o.trans(tokens => {
+    return ([...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
+            unaryOp((tokens[1] as SxOp).op, tokens[2])]);
+})(
+    beginningOrEdgeOp,
+    $o.clsFn(t => isOperator(t, '+') || isOperator(t, '-')),
+    $o.clsFn(t => isValue(t)),
 );
 
 // production rule:
 //   S -> S "**" S
-const exprRule15 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule15 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '**')),
     $o.clsFn(t => isValue(t)),
@@ -182,9 +182,7 @@ const exprRule15 = $o.trans(tokens => {
 //   S -> S "*" S
 //   S -> S "/" S
 //   S -> S "%" S
-const exprRule14 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule14 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '*') || isOperator(t, '/') || isOperator(t, '%')),
     $o.clsFn(t => isValue(t)),
@@ -193,28 +191,40 @@ const exprRule14 = $o.trans(tokens => {
 // production rules:
 //   S -> S "+" S
 //   S -> S "-" S
-const exprRule13 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
-})(
+const exprRule13 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])])(
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '+') || isOperator(t, '-')),
     $o.clsFn(t => isValue(t)),
 );
 
 // production rule:
-//   S -> S "," S
-const exprRule1 = $o.trans(tokens => {
-    return [[binaryOp((tokens[1] as SxOp).op, tokens[0], tokens[2])]]
+//   beginning S -> beginning S "?" S ":" S
+//   ","       S -> ","       S "?" S ":" S
+const exprRule4 = $o.trans(tokens => {
+    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
+            ternaryOp('$if', tokens[1], tokens[3], tokens[5])];
 })(
+    $o.first($o.beginning(() => ({op: '$noop'})), $o.clsFn(t => isOperator(t, ','))),
+    $o.clsFn(t => isValue(t)),
+    $o.clsFn(t => isOperator(t, '?')),
+    $o.clsFn(t => isValue(t)),
+    $o.clsFn(t => isOperator(t, ':')),
+    $o.clsFn(t => isValue(t)),
+);
+
+// production rule:
+//   beginning S -> beginning S "," S
+//   "("       S -> "("       S "," S
+const exprRule1 = $o.trans(tokens => {
+    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
+            binaryOp((tokens[2] as SxOp).op, tokens[1], tokens[3])];
+})(
+    $o.first($o.beginning(() => ({op: '$noop'})), $o.clsFn(t => isOperator(t, '('))),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ',')),
     $o.clsFn(t => isValue(t)),
 );
 
-
-const exprOps = cls('**', '*', '/', '%', '+', '-');
-const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
-    trans(tokens => [{op: tokens[0] as string}])(op);
 
 const exprNested =
     (input: ParserInputWithCtx<string, Ctx>) => exprInner(cls(')'), true)(input);
@@ -223,12 +233,13 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
         ParserFnWithCtx<string, undefined, Ast> = (edge, nested) => combine(
     qty(1)(first(
         erase(classes.space),
+        transformOp(combine(cls('+', '-'), ahead(classes.num))),
         atomValue,
         symbolName,
         transformOp(nested ? first(exprOps, cls(',')) : exprOps),
         combine(
             transformOp(cls('(')),
-            exprNested,
+            qty(0, 1)(exprNested),
             transformOp(cls(')')),
         ),
     )),
@@ -239,9 +250,11 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
     rules: [
         exprRule20,
         exprRule18,
+        { parser: exprRule16, rtol: true },
         exprRule15,
         exprRule14,
         exprRule13,
+        { parser: exprRule4, rtol: true },
         exprRule1,
     ],
     check: $o.combine($o.classes.any, $o.end()),
@@ -266,5 +279,10 @@ export function parse(s: string) {
 
 export function evaluate(s: string) {
     const z = parse(s);
+    liyad.lisp.setGlobals({
+        max: Math.max,
+        twice: (x: number) => x * 2,
+        one: () => 1,
+    });
     return liyad.lisp.evaluateAST([z] as any);
 }

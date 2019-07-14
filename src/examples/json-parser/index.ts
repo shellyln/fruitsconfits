@@ -296,8 +296,28 @@ const objectValue = first(
 );
 
 
-// const unaryOp = (op: string, op1: any) => {
-// };
+const exprOpsTokens = ['**', '*', '/', '%', '+', '-'];
+const edgeOpsTokens = exprOpsTokens.concat(',');
+const constExprOps = cls(...exprOpsTokens);
+
+const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [{
+    token: tokens[0].token, type: 'op', value: tokens[0].token}])(op);
+
+const beginningOrEdgeOp =
+    $o.first($o.beginning(() => ({token: '$noop', type: 'op', value: '$noop'})),
+             $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false),);
+
+
+const unaryOp = (op: string, op1: any) => {
+    switch (op) {
+    case '+':
+        return op1;
+    case '-':
+        return -op1;
+    default:
+        throw new ParseError('Unknown operator has appeared.' + op);
+    }
+};
 
 const binaryOp = (op: string, op1: any, op2: any) => {
     switch (op) {
@@ -330,12 +350,30 @@ const binaryOp = (op: string, op1: any, op2: any) => {
 // const ternaryOp = (op: string, op1: any, op2: any, op3: any) => {
 // };
 
+
 // production rule:
 //   S -> "(" E ")"
 const constExprRule20 = $o.trans(tokens => [tokens[1]])(
     $o.clsFn(t => t.token === '('),
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === ')'),
+);
+
+// production rules:
+//   beginning S -> beginning "+" S
+//   op        S -> op        "+" S
+//   beginning S -> beginning "-" S
+//   op        S -> op        "-" S
+const constExprRule16 = $o.trans(tokens => {
+    return [
+        ...(tokens[0].type === 'op' && tokens[0].value === '$noop' ? [] : [tokens[0]]),
+        { token: tokens[2].token, type: 'value',
+          value: unaryOp(tokens[1].token, tokens[2].value)},
+    ];
+})(
+    beginningOrEdgeOp,
+    $o.clsFn(t => t.token === '+' || t.token === '-'),
+    $o.clsFn(t => t.type === 'value'),
 );
 
 // production rule:
@@ -377,9 +415,6 @@ const constExprRule1 = $o.trans(tokens => [{token: tokens[1].token, type: 'value
     $o.clsFn(t => t.type === 'value'),
 );
 
-const constExprOps = cls('**', '*', '/', '%', '+', '-');
-const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [{
-    token: tokens[0].token, type: 'op', value: tokens[0].token}])(op);
 
 const constExprNested =
     (input: ParserInputWithCtx<string, Ctx>) => constExprInner(cls(')'), true)(input);
@@ -388,6 +423,7 @@ const constExprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: bo
         ParserFnWithCtx<string, undefined, Ast> = (edge, nested) => combine(
     qty(1)(first(
         erase(commentOrSpace),
+        transformOp(combine(cls('+', '-'), ahead(classes.num))),
         atomValue,
         transformOp(nested ? first(constExprOps, cls(',')) : constExprOps),
         combine(
@@ -402,6 +438,7 @@ const constExprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: bo
 const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
     rules: [
         constExprRule20,
+        { parser: constExprRule16, rtol: true },
         constExprRule15,
         constExprRule14,
         constExprRule13,

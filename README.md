@@ -184,6 +184,7 @@ returns an object that containing the parsers.
 
 * [JSON parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/json-parser/index.ts)
 * [CSV parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/csv-parser/index.ts)
+* [formula parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/formula-parser/index.ts)
 
 ## License
 [ISC](https://github.com/shellyln/fruitsconfits/blob/master/LICENSE.md)  
