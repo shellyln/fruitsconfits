@@ -107,7 +107,7 @@ describe("foo", function() {
     });
 
     it("formula-1", function() {
-        const code = `-77,+88,-99-5,+77+1, 10
+        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97)
             ,'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
             , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)`; // 102
         //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22
@@ -127,7 +127,7 @@ describe("foo", function() {
     });
 
     it("formula-2", function() {
-        const code = `-77,+88,-99-5,+77+1, 10
+        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97)
             ,'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
             , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)+true?3:4+one()+(22+33)+44`; // 3
         //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22      +3
@@ -159,6 +159,55 @@ describe("foo", function() {
         const z = evaluateFormula(code);
         console.log(z);
         expect(z).toEqual(eval(code
+            .replace(/# /g, '// ')
+            .replace(/0555/, '0o555')
+            .replace(/\\256/, '\\xae')));
+    });
+
+    it("formula-4", function() {
+        const code = `
+        # qqqqqqqqqqqqqq
+        {
+            "foo":null,
+            "bar":[
+                {
+                    "baz":[null,[1,2,[],3]]// ffffffff ff aaaaa
+                    /*
+                    ggggggggggggggggggg ffffff
+                    */
+                   ,"zzz" : -5432,
+                   'zzzz':+1-2+3-4,
+                   wwwwwww: {"p":7},
+                   wwwww: {},
+                   qwerty: -4321.342e-1,
+                   qqq:\`aa
+                   a\\
+                   bbb\`, asdf :'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
+                },12,
+                null,undefined,0x1,0b111,0o777,0555,-777,+4321.342,
+                5*3,                // === 15
+                7 * 2 + 3 + 4,      // === 21
+                7 + 2 * 3 + 4,      // === 17
+                7 + 2 * 3 ** 4,     // === 169
+                1 + (2 * 3) + 4,    // === 11
+                (1 + 2) * 3,        // ===  9
+                2 * (3 + 4),        // === 14
+                2 * (3 + 4) + 5,    // === 19
+                //(7,6,5),            // ===  5 // TODO: BUG:
+                (7),                // ===  7
+                //((3)),              // ===  3 // TODO: BUG:
+                +1-2+3-4,
+            ],
+        }`;
+        const one = () => 1;
+        const twice = (x: number) => x * 2;
+        const max = Math.max;
+        const x = parseFormula(code);
+        console.log(JSON.stringify(x, void 0, 2));
+        const z = evaluateFormula(code);
+        console.log(z);
+        expect(z).toEqual(eval(
+            ('(' + code + ')')
             .replace(/# /g, '// ')
             .replace(/0555/, '0o555')
             .replace(/\\256/, '\\xae')));

@@ -213,16 +213,16 @@ const listValue = first(
         erase(seq('[')),
             once(combine(
                 erase(repeat(commentOrSpace)),
-                first(input => listValue(input),      // NOTE: recursive definitions
-                      // input => objectValue(input), //       should place as lambda.
+                first(input => listValue(input),   // NOTE: recursive definitions
+                      input => objectValue(input), //       should place as lambda.
                       input => expr(first(seq(','), seq(']')), false)(input),),
                 erase(repeat(commentOrSpace)),)),
             repeat(combine(
                 erase(repeat(commentOrSpace),
                       seq(','),
                       repeat(commentOrSpace)),
-                first(input => listValue(input),      // NOTE: recursive definitions
-                      // input => objectValue(input), //       should place as lambda.
+                first(input => listValue(input),   // NOTE: recursive definitions
+                      input => objectValue(input), //       should place as lambda.
                       input => expr(first(seq(','), seq(']')), false)(input),),
                 erase(repeat(commentOrSpace)),)),
             qty(0, 1)(erase(
@@ -230,6 +230,52 @@ const listValue = first(
                 repeat(commentOrSpace),)),
             first(ahead(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
+    )
+);
+
+const objectKeyValuePair =
+    combine(
+        objKey,
+        erase(repeat(commentOrSpace),
+              first(seq(':'), err('":" is needed.')),
+              repeat(commentOrSpace)),
+        first(input => listValue(input),   // NOTE: recursive definitions
+              input => objectValue(input), //       should place as lambda.
+              input => expr(first(seq(','), seq('}')), false)(input),
+              err('object value is needed.')),
+    );
+
+const objectValue = first(
+    trans(tokens => [{token: '{}', type: 'object', value: {}}])(erase(
+        seq('{'),
+            repeat(commentOrSpace),
+        seq('}'),
+    )),
+    trans(tokens => {
+        const ast: Ast = [{symbol: '#'}];
+        for (let i = 0; i < tokens.length; i += 2) {
+            if (tokens[i] === '__proto__') {
+                continue; // NOTE: prevent prototype pollution attacks
+            }
+            ast.push([tokens[i], tokens[i + 1]]);
+        }
+        return [ast];
+    })(
+        erase(seq('{')),
+            once(combine(
+                erase(repeat(commentOrSpace)),
+                objectKeyValuePair,
+                erase(repeat(commentOrSpace)),)),
+            repeat(combine(
+                erase(seq(','),
+                      repeat(commentOrSpace)),
+                objectKeyValuePair,
+                erase(repeat(commentOrSpace)),)),
+            qty(0, 1)(erase(
+                seq(','),
+                repeat(commentOrSpace),)),
+            first(ahead(seq('}')), err('Unexpected token has appeared.')),
+        erase(seq('}')),
     )
 );
 
@@ -288,7 +334,7 @@ const isValue = (v: any) => {
 
 
 const exprOpsTokens = ['**', '*', '/', '%', '+', '-', '?', ':'];
-const edgeOpsTokens = exprOpsTokens.concat(',');
+const edgeOpsTokens = exprOpsTokens.concat(',', '(');
 const exprOps = cls(...exprOpsTokens);
 
 const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
@@ -438,7 +484,7 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>, nested: boolean) => rules
 
 const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
-    first(listValue, expr(end(), true)),
+    first(listValue, objectValue, expr(end(), true)),
     erase(repeat(commentOrSpace)),
     end(),
 );

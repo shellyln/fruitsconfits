@@ -14,15 +14,30 @@ import { ParserInputWithCtx,
 export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
         input: ParserInputWithCtx<T, C>, message?: string) {
 
-    let src = typeof input.src === 'string' ?
-        input.src.slice(Math.max(input.start - 5, 0), input.start + 55) :
-        '     (object)';
+    let src = '';
+    if (typeof input.src === 'string') {
+        src = input.src.slice(Math.max(input.start - 5, 0), input.start + 55);
 
-    let ar = src.split(/\r\n|\n|\r/);
-    ar = ar.slice(0, 1)
-        .concat('          ^~~~~~~~')
-        .concat(...ar.slice(1));
-    src = ar.join('\n') + '\n\n';
+        let ar = src.split(/\r\n|\n|\r/);
+        ar = ar.slice(0, 1)
+            .concat('          ^~~~~~~~')
+            .concat(...ar.slice(1));
+        src = ar.join('\n') + '\n\n';
+    } else {
+        src = '     (object)\n          ^~~~~~~~';
+        try {
+            src = '     ' +
+                JSON.stringify((input.src as any).slice(Math.max(input.start - 10, 0), input.start)) + '\n          ' +
+                JSON.stringify((input.src as any).slice(input.start, input.start + 1)) + '\n          ' +
+                JSON.stringify((input.src as any).slice(input.start + 1, input.start + 10));
+
+            let ar = src.split(/\r\n|\n|\r/);
+            ar = ar.slice(0, 2)
+                .concat('          ^~~~~~~~')
+                .concat(...ar.slice(2));
+            src = ar.join('\n') + '\n\n';
+        } catch (e) {}
+    }
 
     return (`parse error occured at position:${
         input.start} ${
