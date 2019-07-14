@@ -17,10 +17,10 @@ interface SxOp {
     'op': string;
 }
 
-type AstChild = liyad.SxTokenChild | SxOp;
+type AstChild = liyad.SxTokenChild | SxOp | undefined;
 
 type Ctx = undefined;
-type Ast = liyad.SxToken | AstChild | SxOp;
+type Ast = liyad.SxToken | AstChild | SxOp | undefined;
 
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
@@ -39,6 +39,31 @@ const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
 });
 
 
+const lineComment =
+    combine(
+        seq('//'),
+        repeat(notCls('\r\n', '\n', '\r')),
+        classes.newline,
+    );
+
+const hashLineComment =
+    combine(
+        seq('#'),
+        repeat(notCls('\r\n', '\n', '\r')),
+        classes.newline,
+    );
+
+const blockComment =
+    combine(
+        seq('/*'),
+        repeat(notCls('*/')),
+        seq('*/'),
+    );
+
+const commentOrSpace =
+    first(classes.space, lineComment, hashLineComment, blockComment);
+
+
 const trueValue =
     trans(tokens => [true])
     (seq('true'));
@@ -47,24 +72,166 @@ const falseValue =
     trans(tokens => [false])
     (seq('false'));
 
-const floatingPointNumberValue =
-    trans(tokens => [Number.parseFloat((tokens as string[])[0].replace(/_/g, ''))])
-    (numbers.float);
+const nullValue =
+    trans(tokens => [null])
+    (seq('null'));
+
+const undefinedValue =
+    trans(tokens => [void 0])
+    (seq('undefined'));
+
+const positiveInfinityValue =
+    trans(tokens => [Number.POSITIVE_INFINITY])
+    (qty(0, 1)(seq('+')), seq('Infinity'));
+
+const negativeInfinityValue =
+    trans(tokens => [Number.NEGATIVE_INFINITY])
+    (seq('-Infinity'));
+
+const nanValue =
+    trans(tokens => [Number.NaN])
+    (seq('NaN'));
+
+
+const binaryIntegerValue =
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 2)])
+    (numbers.bin(seq('0b')));
+
+const octalIntegerValue =
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 8)])
+    (numbers.oct(seq('0o'), seq('0')));
+
+const hexIntegerValue =
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 16)])
+    (numbers.hex(seq('0x'), seq('0X')));
 
 const decimalIntegerValue =
     trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 10)])
     (numbers.int);
 
+const floatingPointNumberValue =
+    trans(tokens => [Number.parseFloat((tokens as string[])[0].replace(/_/g, ''))])
+    (numbers.float);
+
 const numberValue =
-    first(floatingPointNumberValue,
-          decimalIntegerValue);
+    first(octalIntegerValue,
+          hexIntegerValue,
+          binaryIntegerValue,
+          floatingPointNumberValue,
+          decimalIntegerValue,
+          positiveInfinityValue,
+          negativeInfinityValue,
+          nanValue);
+
+
+const stringEscapeSeq = first(
+    trans(t => ['\''])(seq('\\\'')),
+    trans(t => ['\"'])(seq('\\"')),
+    trans(t => ['\`'])(seq('\\`')),
+    trans(t => ['\\'])(seq('\\\\')),
+    trans(t => [''])(seq('\\\r\n')),
+    trans(t => [''])(seq('\\\r')),
+    trans(t => [''])(seq('\\\n')),
+    trans(t => ['\n'])(seq('\\n')),
+    trans(t => ['\r'])(seq('\\r')),
+    trans(t => ['\v'])(seq('\\v')),
+    trans(t => ['\t'])(seq('\\t')),
+    trans(t => ['\b'])(seq('\\b')),
+    trans(t => ['\f'])(seq('\\f')),
+    trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
+        cat(erase(seq('\\u')),
+                qty(4, 4)(classes.hex),)),
+    trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
+        cat(erase(seq('\\u{')),
+                qty(1, 6)(classes.hex),
+                erase(seq('}')),)),
+    trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
+        cat(erase(seq('\\x')),
+                qty(2, 2)(classes.hex),)),
+    trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 8))])(
+        cat(erase(seq('\\')),
+                qty(3, 3)(classes.oct),)));
+
+const signleQuotStringValue =
+    trans(tokens => [tokens[0]])(
+        erase(seq("'")),
+            cat(repeat(first(
+                stringEscapeSeq,
+                combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
+                notCls("'"),
+            ))),
+        erase(seq("'")),);
+
+const doubleQuotStringValue =
+    trans(tokens => [tokens[0]])(
+        erase(seq('"')),
+            cat(repeat(first(
+                stringEscapeSeq,
+                combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
+                notCls('"'),
+            ))),
+        erase(seq('"')),);
+
+const backQuotStringValue =
+    trans(tokens => [tokens[0]])(
+        erase(seq('`')),
+            cat(repeat(first(
+                stringEscapeSeq,
+                notCls('`'),
+            ))),
+        erase(seq('`')),);
+
+const stringValue =
+    first(signleQuotStringValue, doubleQuotStringValue, backQuotStringValue);
+
 
 const atomValue =
-    first(trueValue, falseValue, numberValue);
+    first(trueValue, falseValue, nullValue, undefinedValue,
+          numberValue, stringValue);
 
 const symbolName =
     trans(tokens => [{symbol: (tokens as string[])[0]}])
     (cat(combine(classes.alpha, repeat(classes.alnum))));
+
+const objKey =
+    first(stringValue, symbolName);
+
+
+const listValue = first(
+    trans(tokens => [[]])(erase(
+        seq('['),
+            repeat(commentOrSpace),
+        seq(']'),
+    )),
+    trans(tokens => {
+        const ast: Ast = [{symbol: '$list'}];
+        for (const token of tokens) {
+            ast.push(token as any);
+        }
+        return [ast];
+    })(
+        erase(seq('[')),
+            once(combine(
+                erase(repeat(commentOrSpace)),
+                first(input => listValue(input),      // NOTE: recursive definitions
+                      // input => objectValue(input), //       should place as lambda.
+                      input => expr(first(seq(','), seq(']')), false)(input),),
+                erase(repeat(commentOrSpace)),)),
+            repeat(combine(
+                erase(repeat(commentOrSpace),
+                      seq(','),
+                      repeat(commentOrSpace)),
+                first(input => listValue(input),      // NOTE: recursive definitions
+                      // input => objectValue(input), //       should place as lambda.
+                      input => expr(first(seq(','), seq(']')), false)(input),),
+                erase(repeat(commentOrSpace)),)),
+            qty(0, 1)(erase(
+                seq(','),
+                repeat(commentOrSpace),)),
+            first(ahead(seq(']')), err('Unexpected token has appeared.')),
+        erase(seq(']'))
+    )
+);
 
 
 const unaryOp = (op: string, op1: any) => {
@@ -102,7 +269,15 @@ const isOperator = (v: any, op: string) => {
 
 const isValue = (v: any) => {
     switch (typeof v) {
-    case 'number': case 'boolean': case 'string':
+    case 'number': case 'boolean': case 'string': case 'undefined': case 'bigint': case 'function':
+        return true;
+    case 'symbol':
+        return false;
+    }
+    if (v === null) {
+        return true;
+    }
+    if (Object.prototype.hasOwnProperty.call(v, '#')) {
         return true;
     }
     if (Array.isArray(v)) {
@@ -232,7 +407,7 @@ const exprNested =
 const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean) =>
         ParserFnWithCtx<string, undefined, Ast> = (edge, nested) => combine(
     qty(1)(first(
-        erase(classes.space),
+        erase(commentOrSpace),
         transformOp(combine(cls('+', '-'), ahead(classes.num))),
         atomValue,
         symbolName,
@@ -243,10 +418,10 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
             transformOp(cls(')')),
         ),
     )),
-    ahead(repeat(classes.space), edge),
+    ahead(repeat(commentOrSpace), edge),
 );
 
-const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
+const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>, nested: boolean) => rules({
     rules: [
         exprRule20,
         exprRule18,
@@ -258,13 +433,13 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
         exprRule1,
     ],
     check: $o.combine($o.classes.any, $o.end()),
-})(exprInner(edge, true));
+})(exprInner(edge, nested));
 
 
 const program = trans(tokens => tokens)(
-    erase(repeat(classes.space)),
-    expr(end()),
-    erase(repeat(classes.space)),
+    erase(repeat(commentOrSpace)),
+    first(listValue, expr(end(), true)),
+    erase(repeat(commentOrSpace)),
     end(),
 );
 
