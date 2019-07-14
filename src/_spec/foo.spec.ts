@@ -173,6 +173,7 @@ describe("foo", function() {
                     ggggggggggggggggggg ffffff
                     */
                    ,"zzz" : -5432,
+                   'zzzz':+1-2+3-4,
                    wwwwwww: {"p":7},
                    wwwww: {},
                    qwerty: -4321.342e-1,
@@ -192,6 +193,7 @@ describe("foo", function() {
                 (7,6,5),            // ===  5
                 (7),                // ===  7
                 ((3)),              // ===  3
+                +1-2+3-4,
             ],
         }`;
         // const z = parse(parserInput(`{"foo":null,"bar":[{"baz":[null,],},null,],}`, 1));

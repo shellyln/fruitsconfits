@@ -113,9 +113,9 @@ const isValue = (v: any) => {
 
 
 const exprOpsTokens = ['**', '*', '/', '%', '+', '-', '?', ':'];
+const edgeOpsTokens = exprOpsTokens.concat(',');
 const exprOps = cls(...exprOpsTokens);
 
-const edgeOpsTokens = exprOpsTokens.concat(',');
 const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
     trans(tokens => [{op: tokens[0] as string}])(op);
 
