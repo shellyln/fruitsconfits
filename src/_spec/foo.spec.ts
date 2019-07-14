@@ -39,8 +39,8 @@ describe("foo", function() {
         expect(1).toEqual(1);
     });
 
-    it("foo2", function() {
-        const p: StringParserFnWithCtx<undefined, {ch: string}> = (input: StringParserInput) => {
+    it("string-parser-1", function() {
+        const parse: StringParserFnWithCtx<undefined, {ch: string}> = (input: StringParserInput) => {
             return (input.start < input.end ? {
                 succeeded: true,
                 next: {
@@ -58,11 +58,13 @@ describe("foo", function() {
                 message: `parse failed at ${input.start}: ${input.src.slice(input.start, 50)}`,
             });
         }
-        p(parserInput('abcdefg'));
-        expect(1).toEqual(1);
+        const x = parse(parserInput('abcdefg'));
+        expect(x.succeeded && x.tokens).toEqual([
+            {ch: 'a'},
+        ]);
     });
 
-    it("foo3", function() {
+    it("string-parser-2", function() {
         type Ctx = number;
         type Ast = {token: string};
 
@@ -93,17 +95,37 @@ describe("foo", function() {
         expect(1).toEqual(1);
     });
 
-    it("foo4", function() {
+    it("csv-1", function() {
         const x = parseCsv('1, 2 2 ,3 3,4\n 5 , 6 , 7 , 8 \n\n" a , b , ""\n c  ","",9,"",');
         console.log(JSON.stringify(x, void 0, 2));
-        expect(1).toEqual(1);
+        expect(x).toEqual([
+            ['1', '2 2', '3 3', '4'],
+            ['5', '6', '7', '8'],
+            [''],
+            [' a , b , "\n c  ', '', '9', '', ''],
+        ]);
     });
 
-    it("foo5", function() {
+    it("formula-1", function() {
         const code = '-77,+88,-99-5,+77+1, 10 , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)'; // 102
         //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22
         //                                                                                                                                   109 +5+10-22
         //                                                                                                                                         124-22
+        const one = () => 1;
+        const twice = (x: number) => x * 2;
+        const max = Math.max;
+        const x = parseFormula(code);
+        // console.log(JSON.stringify(x, void 0, 2));
+        const z = evaluateFormula(code);
+        console.log(z);
+        expect(z).toEqual(eval(code));
+    });
+
+    it("formula-2", function() {
+        const code = '-77,+88,-99-5,+77+1, 10 , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)+true?3:4+one()+(22+33)+44'; // 3
+        //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22      +3
+        //                                                                                                                                   109 +5+10-22      +3
+        //                                                                                                                                         124-22      +3
         const one = () => 1;
         const twice = (x: number) => x * 2;
         const max = Math.max;
@@ -114,21 +136,21 @@ describe("foo", function() {
         expect(z).toEqual(eval(code));
     });
 
-    it("foo6a", function() {
+    it("json-1", function() {
         const src = `1234`;
         const x = parseJson(src);
         console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval(src));
     });
 
-    it("foo6b", function() {
+    it("json-2", function() {
         const src = `{"foo":null,"bar":[],}`;
         const x = parseJson(src);
         console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval('(' + src + ')'));
     });
 
-    it("foo6c", function() {
+    it("json-3", function() {
         const src = `
         {
             "foo" : null ,
@@ -139,7 +161,7 @@ describe("foo", function() {
         expect(x).toEqual(eval('(' + src + ')'));
     });
 
-    it("foo6d", function() {
+    it("json-4", function() {
         const src = `
         # qqqqqqqqqqqqqq
         {
