@@ -247,7 +247,7 @@ const objectKeyValuePair =
     );
 
 const objectValue = first(
-    trans(tokens => [{token: '{}', type: 'object', value: {}}])(erase(
+    trans(tokens => [[{symbol: '#'}]])(erase(
         seq('{'),
             repeat(commentOrSpace),
         seq('}'),

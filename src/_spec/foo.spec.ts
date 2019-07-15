@@ -97,7 +97,7 @@ describe("foo", function() {
 
     it("csv-1", function() {
         const x = parseCsv('1, 2 2 ,3 3,4\n 5 , 6 , 7 , 8 \n\n" a , b , ""\n c  ","",9,"",');
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual([
             ['1', '2 2', '3 3', '4'],
             ['5', '6', '7', '8'],
@@ -107,7 +107,7 @@ describe("foo", function() {
     });
 
     it("formula-1", function() {
-        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97)
+        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97),[],{},[[1],2,3,{foo:1}],{bar:[4,{baz:5},[],{}]}
             ,'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
             , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)`; // 102
         //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22
@@ -127,7 +127,7 @@ describe("foo", function() {
     });
 
     it("formula-2", function() {
-        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97)
+        const code = `-77,+88,-99-5,+77+1, 10,(11),((12)),(99,98,97),[],{},[[1],2,3,{foo:1}],{bar:[4,{baz:5},[],{}]}
             ,'ccc\\'\\"\\\`\\v\\t\\b\\f\\r\\n\\u26F1\\u{1F608}\\xa9\\256'
             , 20 ,-one(),one(),11 + 13,2+3*4**2+5+2 +twice(5)+max(13,one(),twice(3),17,3)+(3) * 4 + 5 + (6,7,8)+5+10-2*11*(1)+true?3:4+one()+(22+33)+44`; // 3
         //                                                                       55+2 +     10 +                      17   +     12 + 5 +      8 +5+10-22      +3
@@ -155,9 +155,9 @@ describe("foo", function() {
         const twice = (x: number) => x * 2;
         const max = Math.max;
         const x = parseFormula(code);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         const z = evaluateFormula(code);
-        console.log(z);
+        // console.log(z);
         expect(z).toEqual(eval(code
             .replace(/# /g, '// ')
             .replace(/0555/, '0o555')
@@ -176,9 +176,9 @@ describe("foo", function() {
         const twice = (x: number) => x * 2;
         const max = Math.max;
         const x = parseFormula(code);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         const z = evaluateFormula(code);
-        console.log(z);
+        // console.log(z);
         expect(z).toEqual(eval(
             ('(' + code + ')')
             .replace(/# /g, '// ')
@@ -225,9 +225,9 @@ describe("foo", function() {
         const twice = (x: number) => x * 2;
         const max = Math.max;
         const x = parseFormula(code);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         const z = evaluateFormula(code);
-        console.log(z);
+        // console.log(z);
         expect(z).toEqual(eval(
             ('(' + code + ')')
             .replace(/# /g, '// ')
@@ -238,14 +238,14 @@ describe("foo", function() {
     it("json-1", function() {
         const src = `1234`;
         const x = parseJson(src);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval(src));
     });
 
     it("json-2", function() {
         const src = `{"foo":null,"bar":[],}`;
         const x = parseJson(src);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval('(' + src + ')'));
     });
 
@@ -256,7 +256,7 @@ describe("foo", function() {
             "bar" : [ null , 1 ,2, "aaaaaa", ] , 
         } `;
         const x = parseJson(src);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval('(' + src + ')'));
     });
 
@@ -295,9 +295,8 @@ describe("foo", function() {
                 +1-2+3-4,
             ],
         }`;
-        // const z = parse(parserInput(`{"foo":null,"bar":[{"baz":[null,],},null,],}`, 1));
         const x = parseJson(src);
-        console.log(JSON.stringify(x, void 0, 2));
+        // console.log(JSON.stringify(x, void 0, 2));
         expect(x).toEqual(eval('(' +
             src.replace(/# /g, '// ')
             .replace(/0555/, '0o555')
