@@ -22,10 +22,7 @@ type AstChild = liyad.SxTokenChild | SxOp | undefined;
 type Ctx = undefined;
 type Ast = liyad.SxToken | AstChild | SxOp | undefined;
 
-
-const {seq, cls, notCls, clsFn, classes, numbers, cat,
-        once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, ahead, rules} = getStringParsers<Ctx, Ast>({
+const $s = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => String(a) + b)] : []),
@@ -37,6 +34,10 @@ const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
         [tokens.reduce((a, b) => String(a) + b)] : []),
     comparator: (a, b) => a === b,
 });
+
+const {seq, cls, notCls, clsFn, classes, numbers, cat,
+        once, repeat, qty, zeroWidth, err, beginning, end,
+        first, or, combine, erase, trans, ahead, rules} = $s;
 
 
 const lineComment =
@@ -425,7 +426,8 @@ const exprRule4 = $o.trans(tokens => {
     return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
             ternaryOp('$if', tokens[1], tokens[3], tokens[5])];
 })(
-    $o.first($o.beginning(() => ({op: '$noop'})), $o.clsFn(t => isOperator(t, ','))),
+    $o.first($o.clsFn(t => isOperator(t, ',')),
+             $o.beginning(() => ({op: '$noop'})),),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '?')),
     $o.clsFn(t => isValue(t)),
@@ -440,7 +442,8 @@ const exprRule1 = $o.trans(tokens => {
     return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
             binaryOp((tokens[2] as SxOp).op, tokens[1], tokens[3])];
 })(
-    $o.first($o.beginning(() => ({op: '$noop'})), $o.clsFn(t => isOperator(t, '('))),
+    $o.first($o.clsFn(t => isOperator(t, '(')),
+             $o.beginning(() => ({op: '$noop'})),),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ',')),
     $o.clsFn(t => isValue(t)),

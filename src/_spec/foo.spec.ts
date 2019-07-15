@@ -164,6 +164,28 @@ describe("foo", function() {
             .replace(/\\256/, '\\xae')));
     });
 
+    it("formula-4-0", function() {
+        const code = `
+        {
+            "bar":[
+                (7,6,5),            // ===  5 // TODO: BUG:
+                //((3)),              // ===  3 // TODO: BUG:
+            ],
+        }`;
+        const one = () => 1;
+        const twice = (x: number) => x * 2;
+        const max = Math.max;
+        const x = parseFormula(code);
+        console.log(JSON.stringify(x, void 0, 2));
+        const z = evaluateFormula(code);
+        console.log(z);
+        expect(z).toEqual(eval(
+            ('(' + code + ')')
+            .replace(/# /g, '// ')
+            .replace(/0555/, '0o555')
+            .replace(/\\256/, '\\xae')));
+    });
+
     it("formula-4", function() {
         const code = `
         # qqqqqqqqqqqqqq
@@ -193,7 +215,7 @@ describe("foo", function() {
                 (1 + 2) * 3,        // ===  9
                 2 * (3 + 4),        // === 14
                 2 * (3 + 4) + 5,    // === 19
-                //(7,6,5),            // ===  5 // TODO: BUG:
+                (7,6,5),            // ===  5 // TODO: BUG:
                 (7),                // ===  7
                 //((3)),              // ===  3 // TODO: BUG:
                 +1-2+3-4,

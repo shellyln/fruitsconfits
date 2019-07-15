@@ -18,9 +18,7 @@ type Ctx = undefined;
 type Ast = {token: string, type?: string, value?: AstValuesT};
 
 
-const {seq, cls, notCls, clsFn, classes, numbers, cat,
-        once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, ahead, rules} = getStringParsers<Ctx, Ast>({
+const $s = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => ({token: rawToken}),
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
@@ -32,6 +30,10 @@ const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
     comparator: (a, b) => a.type === b.type && a.value === b.value,
 });
+
+const {seq, cls, notCls, clsFn, classes, numbers, cat,
+        once, repeat, qty, zeroWidth, err, beginning, end,
+        first, or, combine, erase, trans, ahead, rules} = $s;
 
 
 const lineComment =
