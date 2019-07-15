@@ -53,28 +53,52 @@ returns an object that containing the parsers.
     * the class is defined by the lambda function
 * classes
   * `alpha`
+    * parser to match the sequence of us-ascii alphabetic characters
   * `upper`
+    * parser to match the sequence of us-ascii upper alphabetic characters
   * `lower`
+    * parser to match the sequence of us-ascii lower alphabetic characters
   * `num`
+    * parser to match the sequence of us-ascii decimal numeric characters
   * `nonzero`
+    * parser to match the sequence of us-ascii decimal numeric characters except `0`
   * `bin`
+    * parser to match the sequence of us-ascii binary numeric characters
   * `oct`
+    * parser to match the sequence of us-ascii octal numeric characters
   * `hex`
+    * parser to match the sequence of us-ascii hexadecimal numeric characters
   * `alnum`
+    * parser to match the sequence of us-ascii alphabetic and numeric characters
   * `space`
+    * parser to match the sequence of whitespace characters except newline (CR/LF) characters
+      * the whitespace characters definition conform to javascript regexp
   * `spaceWithinSingleLine`
+    * parser to match the sequence of whitespace characters
+      * the whitespace characters definition conform to javascript regexp
   * `ctrl`
+    * parser to match the sequence of control characters
+      * the control characters definition conform to javascript regexp
   * `newline`
+    * parser to match the sequence of newline (CR/LF) characters
   * `word`
+    * parser to match the negation of the sequence of whitespaces and control characters
+      * the whitespace and control characters definition conform to javascript regexp
   * `any`
     * parser to match the sequence class that matches to any token
 * numbers
   * `bin(...prefixes: StringParserFnWithCtx<C, R>[])`
+    * parse a binary number
   * `oct(...prefixes: StringParserFnWithCtx<C, R>[])`
+    * parse a octal number
   * `hex(...prefixes: StringParserFnWithCtx<C, R>[])`
+    * parse a hex number
   * `int`
+    * parse a javascript style integer number
   * `bigint`
+    * parse a javascript style bigint number
   * `float`
+    * parse a javascript style floating point number
 * `cat(...parsers: StringParserFnWithCtx<C, R>[])`
   * parser that combine and concatenate the parsing results of `parsers`
 * `once(parser: StringParserFnWithCtx<C, R>)`
@@ -105,6 +129,8 @@ returns an object that containing the parsers.
   * parser that combine parsers `parsers` and transform the result by `fn`
 * `ahead(...parsers: StringParserFnWithCtx<C, R>[])`
   * parser to match zero width by reading ahead and matching with `parsers`
+* `behind(n: number, helper?: () => R)(...parsers: StringParserFnWithCtx<C, R>[])`
+  * parser to match zero width by reading behind and matching with `parsers` and return result that is provided by `helper`
 * `rules(args: ApplyProductionRulesArg<string, C, R>) => (lexer: StringParserFnWithCtx<C, R>)`
   * parser to match the production rules `args`
     * args.rules : production rules
