@@ -1,7 +1,7 @@
 {
   "name": "fruitsconfits",
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "FruitsConfits - A well typed sugared parser combinator framework for TypeScript/JavaScript.",
   "keywords": [
     "parser",
