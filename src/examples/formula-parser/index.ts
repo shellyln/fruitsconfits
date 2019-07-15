@@ -532,11 +532,103 @@ const blockStatement =
         erase(seq('}')),
     );
 
-// TODO: for, while, do, if(if-elseif-else) statements
+// TODO: for, while, do, if(if-elseif-else), switch, return, break statements
+
+const ifStatement =
+    combine(
+        seq('if'),
+        erase(repeat(commentOrSpace)),
+        seq('('),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(')')), true),
+            erase(repeat(commentOrSpace)),
+        seq(')'),
+        erase(repeat(commentOrSpace)),
+        first(blockStatement, singleStatementSC),
+    );
+
+const switchStatement =
+    combine(
+        seq('switch'),
+        erase(repeat(commentOrSpace)),
+        seq('('),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(')')), true),
+            erase(repeat(commentOrSpace)),
+        seq(')'),
+        erase(repeat(commentOrSpace)),
+        seq('{'),
+            erase(repeat(commentOrSpace)),
+            repeat(first(
+                combine(
+                    seq('case'),
+                    erase(repeat(commentOrSpace)),
+                    expr(first(seq(':')), true),
+                    seq(':'),
+                    erase(repeat(commentOrSpace)),
+                    repeat(first(blockStatement, singleStatementSC)),
+                    erase(repeat(commentOrSpace)),),
+                combine(
+                    seq('default'),
+                    erase(repeat(commentOrSpace)),
+                    seq(':'),
+                    erase(repeat(commentOrSpace)),
+                    repeat(first(blockStatement, singleStatementSC)),
+                    erase(repeat(commentOrSpace)),))),
+        seq('}'),
+    );
+
+const forStatement =
+    combine(
+        seq('while'),
+        erase(repeat(commentOrSpace)),
+        seq('('),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(';')), true),
+            seq(';'),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(';')), true),
+            seq(';'),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(')')), true),
+        seq(')'),
+        erase(repeat(commentOrSpace)),
+        first(blockStatement, singleStatementSC),
+    );
+
+const whileStatement =
+    combine(
+        seq('while'),
+        erase(repeat(commentOrSpace)),
+        seq('('),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(')')), true),
+        seq(')'),
+        erase(repeat(commentOrSpace)),
+        first(blockStatement, singleStatementSC),
+    );
+
+const doWhileStatement =
+    combine(
+        seq('do'),
+        erase(repeat(commentOrSpace)),
+        first(blockStatement, singleStatementSC),
+        erase(repeat(commentOrSpace)),
+        seq('while'),
+        seq('('),
+            erase(repeat(commentOrSpace)),
+            expr(first(seq(')')), true),
+        seq(')'),
+    );
 
 const statements =
     qty(1)(first(
         blockStatement,
+        ifStatement,
+        switchStatement,
+        forStatement,
+        whileStatement,
+        doWhileStatement,
         singleStatementSC,
     ));
 
