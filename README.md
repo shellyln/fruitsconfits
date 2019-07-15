@@ -173,6 +173,8 @@ returns an object that containing the parsers.
   * parser that combine parsers `parsers` and transform the result by `fn`
 * `ahead(...parsers: ParserFnWithCtx<T, C, R>[])`
   * parser to match zero width by reading ahead and matching with `parsers`
+* `behind(n: number, helper?: () => R)(...parsers: ParserFnWithCtx<T, C, R>[])`
+  * parser to match zero width by reading behind and matching with `parsers` and return result that is provided by `helper`
 * `rules(args: ApplyProductionRulesArg<T, C, R>) => (lexer: ParserFnWithCtx<T, C, R>)`
   * parser to match the production rules `args`
     * args.rules : production rules

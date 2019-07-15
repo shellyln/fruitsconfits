@@ -13,7 +13,8 @@ import { makeMessage,
          first,
          or,
          transform,
-         readAhead,
+         lookAhead,
+         lookBehind,
          ApplyProductionRulesArg,
          applyProductionRules } from './parser';
 
@@ -212,7 +213,8 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         combine: transform<T, C, R>(),
         erase: transform<T, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),                            // TODO:
-        ahead: (...parsers: ParserFnWithCtx<T, C, R>[]) => readAhead<T, C, R>(...parsers),      // TODO:
+        ahead: (...parsers: ParserFnWithCtx<T, C, R>[]) => lookAhead<T, C, R>(...parsers),      // TODO:
+        behind: (n: number, helper?: () => R) => lookBehind<T, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<T, C, R>) => applyProductionRules<T, C, R>(args), // TODO:
     });
 }

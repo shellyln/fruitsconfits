@@ -328,7 +328,7 @@ export function combine<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
-export function readAhead<T extends ArrayLike<T[number]>, C, R>(
+export function lookAhead<T extends ArrayLike<T[number]>, C, R>(
         ...parsers: Array<ParserFnWithCtx<T, C, R>>
         ): ParserFnWithCtx<T, C, R> {
 
@@ -347,6 +347,47 @@ export function readAhead<T extends ArrayLike<T[number]>, C, R>(
             succeeded: true,
             next: input,
             tokens: [],
+        });
+    });
+}
+
+
+export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
+        n: number, helper?: () => R): (
+            ...parsers: Array<ParserFnWithCtx<T, C, R>>
+            ) => ParserFnWithCtx<T, C, R> {
+
+    return ((...parsers) => {
+        return (input => {
+            if (input.start - n < 0) {
+                return ({
+                    succeeded: false,
+                    error: false,
+                    src: input.src,
+                    pos: input.start,
+                    message: makeMessage(input, 'lookBehind: src is too short'),
+                });
+            }
+            let next = {
+                src: input.src,
+                start: input.start - n,
+                end: input.end,
+                context: input.context,
+            };
+
+            for (const parser of parsers) {
+                const x = parser(next);
+                if (! x.succeeded) {
+                    return x;
+                }
+                next = x.next;
+            };
+
+            return ({
+                succeeded: true,
+                next: input,
+                tokens: helper ? [helper()] : [],
+            });
         });
     });
 }

@@ -307,7 +307,8 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [
 
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({token: '$noop', type: 'op', value: '$noop'})),
-             $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false),);
+             $o.behind(1, () => ({token: '$noop', type: 'op', value: '$noop'}))(
+                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)),);
 
 
 const unaryOp = (op: string, op1: any) => {
@@ -366,13 +367,8 @@ const constExprRule20 = $o.trans(tokens => [tokens[1]])(
 //   op        S -> op        "+" S
 //   beginning S -> beginning "-" S
 //   op        S -> op        "-" S
-const constExprRule16 = $o.trans(tokens => {
-    return [
-        ...(tokens[0].type === 'op' && tokens[0].value === '$noop' ? [] : [tokens[0]]),
-        { token: tokens[2].token, type: 'value',
-          value: unaryOp(tokens[1].token, tokens[2].value)},
-    ];
-})(
+const constExprRule16 = $o.trans(tokens => [{ token: tokens[2].token, type: 'value',
+          value: unaryOp(tokens[1].token, tokens[2].value)}])(
     beginningOrEdgeOp,
     $o.clsFn(t => t.token === '+' || t.token === '-'),
     $o.clsFn(t => t.type === 'value'),

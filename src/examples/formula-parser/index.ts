@@ -343,14 +343,15 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
 
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({op: '$noop'})),
-             $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false),);
+             $o.behind(1, () => ({op: '$noop'}))(
+                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)),);
 
 
 // production rule:
 //   beginning S -> beginning "(" E ")"
 //   op        S -> op        "(" E ")"
 const exprRule20 = $o.trans(tokens => {
-    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]), tokens[2]];
+    return [tokens[2]];
 })(
     beginningOrEdgeOp,
     $o.clsFn(t => isOperator(t, '(')),
@@ -384,8 +385,7 @@ const exprRule18 = $o.trans(tokens => {
 //   beginning S -> beginning "-" S
 //   op        S -> op        "-" S
 const exprRule16 = $o.trans(tokens => {
-    return ([...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
-            unaryOp((tokens[1] as SxOp).op, tokens[2])]);
+    return ([unaryOp((tokens[1] as SxOp).op, tokens[2])]);
 })(
     beginningOrEdgeOp,
     $o.clsFn(t => isOperator(t, '+') || isOperator(t, '-')),
@@ -423,11 +423,10 @@ const exprRule13 = $o.trans(tokens => [binaryOp((tokens[1] as SxOp).op, tokens[0
 //   beginning S -> beginning S "?" S ":" S
 //   ","       S -> ","       S "?" S ":" S
 const exprRule4 = $o.trans(tokens => {
-    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
-            ternaryOp('$if', tokens[1], tokens[3], tokens[5])];
+    return [ternaryOp('$if', tokens[1], tokens[3], tokens[5])];
 })(
-    $o.first($o.clsFn(t => isOperator(t, ',')),
-             $o.beginning(() => ({op: '$noop'})),),
+    $o.first($o.beginning(() => ({op: '$noop'})),
+             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, ','))),),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '?')),
     $o.clsFn(t => isValue(t)),
@@ -439,11 +438,10 @@ const exprRule4 = $o.trans(tokens => {
 //   beginning S -> beginning S "," S
 //   "("       S -> "("       S "," S
 const exprRule1 = $o.trans(tokens => {
-    return [...(isOperator(tokens[0], '$noop') ? [] : [tokens[0]]),
-            binaryOp((tokens[2] as SxOp).op, tokens[1], tokens[3])];
+    return [binaryOp((tokens[2] as SxOp).op, tokens[1], tokens[3])];
 })(
-    $o.first($o.clsFn(t => isOperator(t, '(')),
-             $o.beginning(() => ({op: '$noop'})),),
+    $o.first($o.beginning(() => ({op: '$noop'})),
+             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, '('))),),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ',')),
     $o.clsFn(t => isValue(t)),

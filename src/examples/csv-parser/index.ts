@@ -12,12 +12,14 @@ type Ctx = undefined;
 type Ast = string | string[];
 
 
-const {seq, cls, notCls, classes, cat,
-        repeat, end, first, combine, erase, trans, ahead} = getStringParsers<Ctx, Ast>({
+const $s = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => a as string + b as string)] : []),
 });
+
+const {seq, cls, notCls, classes, cat,
+        repeat, end, first, combine, erase, trans, ahead} = $s;
 
 
 const quoted = trans(input => input.length ? input : [''])(

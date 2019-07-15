@@ -13,7 +13,8 @@ import { makeMessage,
          first,
          or,
          transform,
-         readAhead,
+         lookAhead,
+         lookBehind,
          ApplyProductionRulesArg,
          applyProductionRules } from './parser';
 
@@ -414,7 +415,8 @@ export function getStringParsers<C, R>(
         combine,
         erase,
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),                                 // TODO:
-        ahead: (...parsers: StringParserFnWithCtx<C, R>[]) => readAhead<string, C, R>(...parsers),        // TODO:
+        ahead: (...parsers: StringParserFnWithCtx<C, R>[]) => lookAhead<string, C, R>(...parsers),        // TODO:
+        behind: (n: number, helper?: () => R) => lookBehind<string, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules<string, C, R>(args), // TODO:
     });
 }
