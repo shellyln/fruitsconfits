@@ -456,6 +456,9 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
     qty(1)(first(
         erase(commentOrSpace),
         transformOp(combine(cls('+', '-'), ahead(classes.num))),
+        listValue,
+        objectValue,
+        // lambdaFnValue
         atomValue,
         symbolName,
         transformOp(nested ? first(exprOps, cls(',')) : exprOps),
@@ -483,9 +486,35 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>, nested: boolean) => rules
 })(exprInner(edge, nested));
 
 
+const exprStatement =
+    expr(end(), true);
+
+const letStatement =
+    combine();
+
+const singleStatement =
+    first(exprStatement);
+
+const singleStatementSC =
+    combine(singleStatement, first(ahead(end()), ahead(cls('{')), erase(seq(';'))));
+
+const blockStatement =
+    combine(
+        erase(seq('{')),
+        (input) => statements(input),
+        erase(seq('}')),
+    );
+
+const statements =
+    qty(1)(first(
+        blockStatement,
+        singleStatementSC,
+    ));
+
+
 const program = trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
-    first(listValue, objectValue, expr(end(), true)),
+    expr(end(), true),
     erase(repeat(commentOrSpace)),
     end(),
 );
