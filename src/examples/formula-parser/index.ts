@@ -458,7 +458,7 @@ const exprInner: (edge: ParserFnWithCtx<string, undefined, Ast>, nested: boolean
         transformOp(combine(cls('+', '-'), ahead(classes.num))),
         listValue,
         objectValue,
-        // lambdaFnValue
+        // TODO: lambdaFnValue
         atomValue,
         symbolName,
         transformOp(nested ? first(exprOps, cls(',')) : exprOps),
@@ -487,16 +487,43 @@ const expr = (edge: ParserFnWithCtx<string, Ctx, Ast>, nested: boolean) => rules
 
 
 const exprStatement =
-    expr(end(), true);
+    expr(first(end(), seq(';')), true);
+
+const letStatementInner =
+    combine(
+        symbolName,
+        erase(repeat(commentOrSpace)),
+        erase(seq('=')),
+        erase(repeat(commentOrSpace)),
+        expr(first(end(), seq(';')), true),);
 
 const letStatement =
-    combine();
+    combine(
+        seq('let'),
+        erase(qty(1)(commentOrSpace)),
+        first(
+            combine(letStatementInner,
+                    repeat(combine(
+                        erase(repeat(commentOrSpace), seq(','), repeat(commentOrSpace)),
+                        letStatementInner,))),
+            err('Unexpected token has appeared.'),
+        ));
 
 const singleStatement =
-    first(exprStatement);
+    first(exprStatement, letStatement);
 
 const singleStatementSC =
-    combine(singleStatement, first(ahead(end()), ahead(cls('{')), erase(seq(';'))));
+    combine(singleStatement,
+            erase(repeat(commentOrSpace)),
+            first(ahead(end()),
+                  ahead(cls('{', '}')),
+                  ahead(seq('let'), first(commentOrSpace, cls('{'))),
+                  ahead(seq('for'), first(commentOrSpace, cls('{'))),
+                  ahead(seq('while'), first(commentOrSpace, cls('{'))),
+                  ahead(seq('do'), first(commentOrSpace, cls('{'))),
+                  ahead(seq('if'), first(commentOrSpace, cls('{'))),
+                  erase(seq(';')),
+                  err('Unexpected token has appeared.')));
 
 const blockStatement =
     combine(
@@ -504,6 +531,8 @@ const blockStatement =
         (input) => statements(input),
         erase(seq('}')),
     );
+
+// TODO: for, while, do, if(if-elseif-else) statements
 
 const statements =
     qty(1)(first(
