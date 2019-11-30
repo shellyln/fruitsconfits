@@ -338,7 +338,7 @@ export function getStringParsers<C, R>(
         return c.length;
     });
 
-    
+
     const binSep =
         first(isBinNum, cls('_'));
     const octSep =
@@ -346,30 +346,30 @@ export function getStringParsers<C, R>(
     const hexSep =
         first(isHexNum, cls('_'));
 
-    const binaryIntegerNumber = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+    const binaryIntegerNumber = (...prefixes: Array<StringParserFnWithCtx<C, R>>) =>
         combine(erase(first(...prefixes)),
-            cat(once(isBinNum), repeat(binSep)),);
-    const octalIntegerNumber = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+            cat(once(isBinNum), repeat(binSep)), );
+    const octalIntegerNumber = (...prefixes: Array<StringParserFnWithCtx<C, R>>) =>
         combine(erase(first(...prefixes)),
-            cat(once(isOctNum), repeat(octSep)),);
-    const hexIntegerValue = (...prefixes: StringParserFnWithCtx<C, R>[]) =>
+            cat(once(isOctNum), repeat(octSep)), );
+    const hexIntegerValue = (...prefixes: Array<StringParserFnWithCtx<C, R>>) =>
         combine(erase(first(...prefixes)),
-            cat(once(isHexNum), repeat(hexSep)),);
+            cat(once(isHexNum), repeat(hexSep)), );
     const decimalIntegerNumber =
         combine(qty(0, 1)(cls('+', '-')),
             first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
-                seq('0'),));
+                seq('0'), ));
     const bigDecimalIntegerNumber =
         combine(decimalIntegerNumber,
-            erase(seq('n')),);
+            erase(seq('n')), );
     const floatingPointNumber =
         combine(cat(qty(0, 1)(cls('+', '-')),
             first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
-                seq('0'),),
+                seq('0'), ),
             qty(0, 1)(combine(seq('.'),
-                qty(1)(first(isNumber, cls('_'))),)),
+                qty(1)(first(isNumber, cls('_'))), )),
             qty(0, 1)(combine(cls('E', 'e'), qty(0, 1)(cls('+', '-')),
-                first(combine(once(isNonZeroNumber), repeat(isNumber)), seq('0')),))));
+                first(combine(once(isNonZeroNumber), repeat(isNumber)), seq('0')), ))));
 
     // TODO: reduce unneccessary call for adding types.
     return ({
@@ -410,12 +410,12 @@ export function getStringParsers<C, R>(
         err: (message: string) => zeroWidthError<string, C, R>(message),  // TODO:
         beginning: (helper?: () => R) => beginning<string, C, R>(helper), // TODO:
         end: (helper?: () => R) => end<string, C, R>(helper),             // TODO:
-        first: (...parsers: StringParserFnWithCtx<C, R>[]) => first<string, C, R>(...parsers), // TODO:
-        or: (...parsers: StringParserFnWithCtx<C, R>[]) => or<string, C, R>(...parsers),       // TODO:
+        first: (...parsers: Array<StringParserFnWithCtx<C, R>>) => first<string, C, R>(...parsers), // TODO:
+        or: (...parsers: Array<StringParserFnWithCtx<C, R>>) => or<string, C, R>(...parsers),       // TODO:
         combine,
         erase,
         trans: (fn: (tokens: R[]) => R[]) => transform<string, C, R>(fn),                                 // TODO:
-        ahead: (...parsers: StringParserFnWithCtx<C, R>[]) => lookAhead<string, C, R>(...parsers),        // TODO:
+        ahead: (...parsers: Array<StringParserFnWithCtx<C, R>>) => lookAhead<string, C, R>(...parsers),   // TODO:
         behind: (n: number, helper?: () => R) => lookBehind<string, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules<string, C, R>(args), // TODO:
     });

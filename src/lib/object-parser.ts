@@ -65,7 +65,7 @@ export function objSequence<T extends ArrayLike<T[number]>, C, R>(
 export function objClass<T extends ArrayLike<T[number]>, C, R>(
         helper: (token: T[number]) => R,
         comparator: (a: T[number], b: T[number]) => boolean,
-        ): (...needles: T[number][]) => ParserFnWithCtx<T, C, R> {
+        ): (...needles: Array<T[number]>) => ParserFnWithCtx<T, C, R> {
 
     // NOTE: <T> version `needles` type is `T`.
     return ((...needles) => {
@@ -104,7 +104,7 @@ export function objClass<T extends ArrayLike<T[number]>, C, R>(
 export function objClassNot<T extends ArrayLike<T[number]>, C, R>(
     helper: (token: T[number]) => R,
     comparator: (a: T[number], b: T[number]) => boolean,
-    ): (...needles: T[number][]) => ParserFnWithCtx<T, C, R> {
+    ): (...needles: Array<T[number]>) => ParserFnWithCtx<T, C, R> {
 
     // NOTE: <T> version `needles` type is `T`.
     return ((...needles) => {
@@ -208,12 +208,12 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         err: (message: string) => zeroWidthError<T, C, R>(message),       // TODO:
         beginning: (helper?: () => R) => beginning<T, C, R>(helper),      // TODO:
         end: (helper?: () => R) => end<T, C, R>(helper),                  // TODO:
-        first: (...parsers: ParserFnWithCtx<T, C, R>[]) => first<T, C, R>(...parsers), // TODO:
-        or: (...parsers: ParserFnWithCtx<T, C, R>[]) => or<T, C, R>(...parsers),       // TODO:
+        first: (...parsers: Array<ParserFnWithCtx<T, C, R>>) => first<T, C, R>(...parsers), // TODO:
+        or: (...parsers: Array<ParserFnWithCtx<T, C, R>>) => or<T, C, R>(...parsers),       // TODO:
         combine: transform<T, C, R>(),
         erase: transform<T, C, R>(tokens => []),
         trans: (fn: (tokens: R[]) => R[]) => transform<T, C, R>(fn),                            // TODO:
-        ahead: (...parsers: ParserFnWithCtx<T, C, R>[]) => lookAhead<T, C, R>(...parsers),      // TODO:
+        ahead: (...parsers: Array<ParserFnWithCtx<T, C, R>>) => lookAhead<T, C, R>(...parsers), // TODO:
         behind: (n: number, helper?: () => R) => lookBehind<T, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<T, C, R>) => applyProductionRules<T, C, R>(args), // TODO:
     });

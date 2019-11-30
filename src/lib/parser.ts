@@ -210,7 +210,7 @@ export function first<T extends ArrayLike<T[number]>, C, R>(
     return (input => {
         let matched: {next: ParserInputWithCtx<T, C>, tokens: R[]} | null = null;
 
-        let last: ParserFnFailedResult<T ,C, R> | null = null;
+        let last: ParserFnFailedResult<T, C, R> | null = null;
         for (const parser of parsers) {
             const x = parser(input);
             if (x.succeeded) {
@@ -250,7 +250,7 @@ export function or<T extends ArrayLike<T[number]>, C, R>(
     return (input => {
         const matched: Array<{next: ParserInputWithCtx<T, C>, tokens: R[]}> = [];
 
-        let last: ParserFnFailedResult<T ,C, R> | null = null;
+        let last: ParserFnFailedResult<T, C, R> | null = null;
         for (const parser of parsers) {
             const x = parser(input);
             if (x.succeeded) {
@@ -301,7 +301,7 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                 }
                 next = x.next;
                 tokens.push(...x.tokens);
-            };
+            }
 
             // TODO: report errors while transforming
             const t2 = trans ? trans(tokens, input) : tokens;
@@ -341,7 +341,7 @@ export function lookAhead<T extends ArrayLike<T[number]>, C, R>(
                 return x;
             }
             next = x.next;
-        };
+        }
 
         return ({
             succeeded: true,
@@ -381,7 +381,7 @@ export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
                     return x;
                 }
                 next = x.next;
-            };
+            }
 
             return ({
                 succeeded: true,
@@ -393,6 +393,7 @@ export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
+// tslint:disable-next-line: interface-over-type-literal
 export type ApplyProductionRulesArg<T extends ArrayLike<T[number]>, C, R> = {
     rules: Array<ParserFnWithCtx<R[], C, R> |
            {parser: ParserFnWithCtx<R[], C, R>, rtol: boolean}>,

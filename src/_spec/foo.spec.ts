@@ -1,4 +1,8 @@
 
+// tslint:disable: no-eval
+// tslint:disable: interface-over-type-literal
+
+
 import { ParserInputWithCtx,
          ParserInput,
          StringParserInputWithCtx,
@@ -11,15 +15,6 @@ import { ParserInputWithCtx,
          ParserFn,
          StringParserFnWithCtx,
          StringParserFn } from '../lib/types';
-import { zeroWidth,
-         zeroWidthError,
-         beginning,
-         end,
-         quantify,
-         first,
-         or,
-         transform,
-         combine } from '../lib/parser';
 import { charSequence,
          charClass,
          charClassNot,
@@ -57,7 +52,7 @@ describe("foo", function() {
                 pos: input.start,
                 message: `parse failed at ${input.start}: ${input.src.slice(input.start, 50)}`,
             });
-        }
+        };
         const x = parse(parserInput('abcdefg'));
         expect(x.succeeded && x.tokens).toEqual([
             {ch: 'a'},
@@ -69,27 +64,28 @@ describe("foo", function() {
         type Ast = {token: string};
 
         const {seq, cls, notCls, clsFn, classes, cat,
-                qty, repeat, zeroWidth, beginning, end,
-                first, or, combine} = getStringParsers<Ctx, Ast>({
+               qty, repeat, zeroWidth, beginning, end,
+               first, or, combine} = getStringParsers<Ctx, Ast>({
             rawToToken: token => ({token}),
             concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
         });
         const zw = zeroWidth(() => ({token: '@'}));
 
         const parse = combine(
-            cat(seq('Hello'), seq(','),),
+            cat(seq('Hello'), seq(','), ),
             cat(zw, seq('Wor'), notCls('z', 'd'),
                 first(cls('z', 'y'),
-                      cls('d', 'l')),),
+                      cls('d', 'l')), ),
             cat(or(seq('?'),
                    seq('!'),
                    seq('!!'),
-                   qty(0, 10)(seq('!'))),),
+                   qty(0, 10)(seq('!'))), ),
             end(),
         );
 
         const x = parse(parserInput('Hello,World!!!!!!!!!!', 1));
         if (x.succeeded) {
+            // tslint:disable-next-line: no-unused-expression
             x.next.context;
         }
         expect(1).toEqual(1);
@@ -114,7 +110,7 @@ describe("foo", function() {
         //                                                                                                                                   109 +5+10-22
         //                                                                                                                                         124-22
         const one = () => 1;
-        const twice = (x: number) => x * 2;
+        const twice = (a: number) => a * 2;
         const max = Math.max;
         const x = parseFormula(code);
         // console.log(JSON.stringify(x, void 0, 2));
@@ -134,7 +130,7 @@ describe("foo", function() {
         //                                                                                                                                   109 +5+10-22      +3
         //                                                                                                                                         124-22      +3
         const one = () => 1;
-        const twice = (x: number) => x * 2;
+        const twice = (a: number) => a * 2;
         const max = Math.max;
         const x = parseFormula(code);
         console.log(JSON.stringify(x, void 0, 2));
@@ -152,7 +148,7 @@ describe("foo", function() {
             [1,2,3+5]
         ]`;
         const one = () => 1;
-        const twice = (x: number) => x * 2;
+        const twice = (a: number) => a * 2;
         const max = Math.max;
         const x = parseFormula(code);
         // console.log(JSON.stringify(x, void 0, 2));
@@ -173,7 +169,7 @@ describe("foo", function() {
             ],
         }`;
         const one = () => 1;
-        const twice = (x: number) => x * 2;
+        const twice = (a: number) => a * 2;
         const max = Math.max;
         const x = parseFormula(code);
         // console.log(JSON.stringify(x, void 0, 2));
@@ -222,7 +218,7 @@ describe("foo", function() {
             ],
         }`;
         const one = () => 1;
-        const twice = (x: number) => x * 2;
+        const twice = (a: number) => a * 2;
         const max = Math.max;
         const x = parseFormula(code);
         // console.log(JSON.stringify(x, void 0, 2));
@@ -253,7 +249,7 @@ describe("foo", function() {
         const src = `
         {
             "foo" : null ,
-            "bar" : [ null , 1 ,2, "aaaaaa", ] , 
+            "bar" : [ null , 1 ,2, "aaaaaa", ] ,
         } `;
         const x = parseJson(src);
         // console.log(JSON.stringify(x, void 0, 2));

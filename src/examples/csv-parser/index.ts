@@ -19,7 +19,7 @@ const $s = getStringParsers<Ctx, Ast>({
 });
 
 const {seq, cls, notCls, classes, cat,
-        repeat, end, first, combine, erase, trans, ahead} = $s;
+       repeat, end, first, combine, erase, trans, ahead} = $s;
 
 
 const quoted = trans(input => input.length ? input : [''])(
@@ -28,25 +28,25 @@ const quoted = trans(input => input.length ? input : [''])(
         trans(input => ['"'])(seq('""')),
         notCls('"'),
     ))),
-    erase(cls('"'), repeat(erase(classes.spaceWithinSingleLine))),);
+    erase(cls('"'), repeat(erase(classes.spaceWithinSingleLine))), );
 
 const nakid = trans(input => input.length ? input : [''])(
     erase(repeat(classes.spaceWithinSingleLine)),
     cat(repeat(first(
         erase(classes.spaceWithinSingleLine, ahead(cls(',', '\r\n', '\n', '\r'))),
         notCls(',', '\r\n', '\n', '\r'),
-    ))),);
+    ))), );
 
 const cell = first(quoted, nakid);
 
 const row = trans(input => [input as string[]])(
     cell,
-    repeat(combine(erase(seq(',')), cell)),);
+    repeat(combine(erase(seq(',')), cell)), );
 
 const rows = combine(
     row,
     repeat(combine(erase(classes.newline), row)),
-    end(),);
+    end(), );
 
 
 export function parse(s: string) {

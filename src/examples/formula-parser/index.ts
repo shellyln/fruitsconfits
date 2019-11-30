@@ -3,6 +3,8 @@
 // https://github.com/shellyln
 
 
+// tslint:disable: no-implicit-dependencies
+
 import { ParseError,
          ParserInputWithCtx,
          parserInput,
@@ -28,7 +30,7 @@ const $s = getStringParsers<Ctx, Ast>({
         [tokens.reduce((a, b) => String(a) + b)] : []),
 });
 
-const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
+const $o = getObjectParsers<Ast[], Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => String(a) + b)] : []),
@@ -36,8 +38,8 @@ const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
 });
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
-        once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, ahead, rules} = $s;
+       once, repeat, qty, zeroWidth, err, beginning, end,
+       first, or, combine, erase, trans, ahead, rules} = $s;
 
 
 const lineComment =
@@ -141,17 +143,17 @@ const stringEscapeSeq = first(
     trans(t => ['\f'])(seq('\\f')),
     trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
         cat(erase(seq('\\u')),
-                qty(4, 4)(classes.hex),)),
+                qty(4, 4)(classes.hex), )),
     trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
         cat(erase(seq('\\u{')),
                 qty(1, 6)(classes.hex),
-                erase(seq('}')),)),
+                erase(seq('}')), )),
     trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 16))])(
         cat(erase(seq('\\x')),
-                qty(2, 2)(classes.hex),)),
+                qty(2, 2)(classes.hex), )),
     trans(t => [String.fromCodePoint(Number.parseInt((t as string[])[0], 8))])(
         cat(erase(seq('\\')),
-                qty(3, 3)(classes.oct),)));
+                qty(3, 3)(classes.oct), )));
 
 const signleQuotStringValue =
     trans(tokens => [tokens[0]])(
@@ -161,7 +163,7 @@ const signleQuotStringValue =
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls("'"),
             ))),
-        erase(seq("'")),);
+        erase(seq("'")), );
 
 const doubleQuotStringValue =
     trans(tokens => [tokens[0]])(
@@ -171,7 +173,7 @@ const doubleQuotStringValue =
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls('"'),
             ))),
-        erase(seq('"')),);
+        erase(seq('"')), );
 
 const backQuotStringValue =
     trans(tokens => [tokens[0]])(
@@ -180,7 +182,7 @@ const backQuotStringValue =
                 stringEscapeSeq,
                 notCls('`'),
             ))),
-        erase(seq('`')),);
+        erase(seq('`')), );
 
 const stringValue =
     first(signleQuotStringValue, doubleQuotStringValue, backQuotStringValue);
@@ -216,19 +218,19 @@ const listValue = first(
                 erase(repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => expr(first(seq(','), seq(']')), false)(input),),
-                erase(repeat(commentOrSpace)),)),
+                      input => expr(first(seq(','), seq(']')), false)(input), ),
+                erase(repeat(commentOrSpace)), )),
             repeat(combine(
                 erase(repeat(commentOrSpace),
                       seq(','),
                       repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => expr(first(seq(','), seq(']')), false)(input),),
-                erase(repeat(commentOrSpace)),)),
+                      input => expr(first(seq(','), seq(']')), false)(input), ),
+                erase(repeat(commentOrSpace)), )),
             qty(0, 1)(erase(
                 seq(','),
-                repeat(commentOrSpace),)),
+                repeat(commentOrSpace), )),
             first(ahead(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
     )
@@ -266,15 +268,15 @@ const objectValue = first(
             once(combine(
                 erase(repeat(commentOrSpace)),
                 objectKeyValuePair,
-                erase(repeat(commentOrSpace)),)),
+                erase(repeat(commentOrSpace)), )),
             repeat(combine(
                 erase(seq(','),
                       repeat(commentOrSpace)),
                 objectKeyValuePair,
-                erase(repeat(commentOrSpace)),)),
+                erase(repeat(commentOrSpace)), )),
             qty(0, 1)(erase(
                 seq(','),
-                repeat(commentOrSpace),)),
+                repeat(commentOrSpace), )),
             first(ahead(seq('}')), err('Unexpected token has appeared.')),
         erase(seq('}')),
     )
@@ -344,7 +346,7 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({op: '$noop'})),
              $o.behind(1, () => ({op: '$noop'}))(
-                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)),);
+                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)), );
 
 
 // production rule:
@@ -372,10 +374,10 @@ const exprRule18 = $o.trans(tokens => {
     }
 })(
     $o.first($o.clsFn(t => liyad.isSymbol(t) ? true : false),
-             $o.clsFn(t => isValue(t)),),
+             $o.clsFn(t => isValue(t)), ),
     $o.erase($o.clsFn(t => isOperator(t, '('))),
     $o.qty(0, 1)($o.first($o.clsFn(t => Array.isArray(t) && liyad.isSymbol(t[0], '$last') ? true : false),
-                          $o.clsFn(t => isValue(t)),)),
+                          $o.clsFn(t => isValue(t)), )),
     $o.erase($o.clsFn(t => isOperator(t, ')'))),
 );
 
@@ -426,7 +428,7 @@ const exprRule4 = $o.trans(tokens => {
     return [ternaryOp('$if', tokens[1], tokens[3], tokens[5])];
 })(
     $o.first($o.beginning(() => ({op: '$noop'})),
-             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, ','))),),
+             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, ','))), ),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, '?')),
     $o.clsFn(t => isValue(t)),
@@ -441,7 +443,7 @@ const exprRule1 = $o.trans(tokens => {
     return [binaryOp((tokens[2] as SxOp).op, tokens[1], tokens[3])];
 })(
     $o.first($o.beginning(() => ({op: '$noop'})),
-             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, '('))),),
+             $o.behind(1, () => ({op: '$noop'}))($o.clsFn(t => isOperator(t, '('))), ),
     $o.clsFn(t => isValue(t)),
     $o.clsFn(t => isOperator(t, ',')),
     $o.clsFn(t => isValue(t)),
@@ -495,7 +497,7 @@ const letStatementInner =
         erase(repeat(commentOrSpace)),
         erase(seq('=')),
         erase(repeat(commentOrSpace)),
-        expr(first(end(), seq(';')), true),);
+        expr(first(end(), seq(';')), true), );
 
 const letStatement =
     combine(
@@ -505,7 +507,7 @@ const letStatement =
             combine(letStatementInner,
                     repeat(combine(
                         erase(repeat(commentOrSpace), seq(','), repeat(commentOrSpace)),
-                        letStatementInner,))),
+                        letStatementInner, ))),
             err('Unexpected token has appeared.'),
         ));
 
@@ -567,14 +569,14 @@ const switchStatement =
                     erase(seq(':')),
                     erase(repeat(commentOrSpace)),
                     repeat(first(blockStatement, singleStatementSC)),
-                    erase(repeat(commentOrSpace)),),
+                    erase(repeat(commentOrSpace)), ),
                 combine(
                     erase(seq('default')),
                     erase(repeat(commentOrSpace)),
                     erase(seq(':')),
                     erase(repeat(commentOrSpace)),
                     repeat(first(blockStatement, singleStatementSC)),
-                    erase(repeat(commentOrSpace)),))),
+                    erase(repeat(commentOrSpace)), ))),
         erase(seq('}')),
     );
 

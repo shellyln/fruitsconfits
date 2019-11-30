@@ -28,14 +28,19 @@ export function parserInput<T extends ArrayLike<T[number]>, C>(src: T, context?:
 }
 
 
+// tslint:disable-next-line: interface-over-type-literal
 export type ParserFnSucceededResult<T extends ArrayLike<T[number]>, C, R> =
     {succeeded: true, next: ParserInputWithCtx<T, C>, tokens: R[]};
+
+// tslint:disable-next-line: interface-over-type-literal
 export type ParserFnFailedResult<T extends ArrayLike<T[number]>, C, R> =
     {succeeded: false, error: boolean, src: T, pos: number, message: string};
+
 export type ParserFnWithCtx<T extends ArrayLike<T[number]>, C, R> =
     (input: ParserInputWithCtx<T, C>) =>
         ParserFnSucceededResult<T, C, R> |
         ParserFnFailedResult<T, C, R>;
-export type ParserFn<T extends ArrayLike<T[number]>, R> = ParserFnWithCtx<T, undefined, R>
+
+export type ParserFn<T extends ArrayLike<T[number]>, R> = ParserFnWithCtx<T, undefined, R>;
 export type StringParserFnWithCtx<C, R> = ParserFnWithCtx<string, C, R>;
 export type StringParserFn<R> = StringParserFnWithCtx<undefined, R>;

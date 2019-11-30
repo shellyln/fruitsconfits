@@ -3,6 +3,10 @@
 // https://github.com/shellyln
 
 
+// tslint:disable: no-implicit-dependencies
+// tslint:disable: interface-over-type-literal
+// tslint:disable: align
+
 import { ParseError,
          ParserInputWithCtx,
          parserInput,
@@ -12,7 +16,7 @@ import { getObjectParsers } from '../../lib/object-parser';
 
 
 
-type AstValuesT = number | string | boolean | BigInt | null | object | Array<any> | undefined;
+type AstValuesT = number | string | boolean | BigInt | null | object | any[] | undefined;
 
 type Ctx = undefined;
 type Ast = {token: string, type?: string, value?: AstValuesT};
@@ -24,7 +28,7 @@ const $s = getStringParsers<Ctx, Ast>({
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
 });
 
-const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
+const $o = getObjectParsers<Ast[], Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
         [tokens.reduce((a, b) => ({token: a.token + b.token}))] : []),
@@ -32,8 +36,8 @@ const $o = getObjectParsers<Array<Ast>, Ctx, Ast>({
 });
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
-        once, repeat, qty, zeroWidth, err, beginning, end,
-        first, or, combine, erase, trans, ahead, rules} = $s;
+       once, repeat, qty, zeroWidth, err, beginning, end,
+       first, or, combine, erase, trans, ahead, rules} = $s;
 
 
 const lineComment =
@@ -132,7 +136,7 @@ const numberValue =
           hexIntegerValue,
           binaryIntegerValue,
           floatingPointNumberValue,
-          bigDecimalIntegerValue, 
+          bigDecimalIntegerValue,
           decimalIntegerValue,
           positiveInfinityValue,
           negativeInfinityValue,
@@ -155,17 +159,17 @@ const stringEscapeSeq = first(
     trans(t => [{token: '\f'}])(seq('\\f')),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\u')),
-                qty(4, 4)(classes.hex),)),
+                qty(4, 4)(classes.hex), )),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\u{')),
                 qty(1, 6)(classes.hex),
-                erase(seq('}')),)),
+                erase(seq('}')), )),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 16))}])(
         cat(erase(seq('\\x')),
-                qty(2, 2)(classes.hex),)),
+                qty(2, 2)(classes.hex), )),
     trans(t => [{token: String.fromCodePoint(Number.parseInt(t[0].token, 8))}])(
         cat(erase(seq('\\')),
-                qty(3, 3)(classes.oct),)));
+                qty(3, 3)(classes.oct), )));
 
 const signleQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -176,7 +180,7 @@ const signleQuotStringValue =
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls("'"),
             ))),
-        erase(seq("'")),);
+        erase(seq("'")), );
 
 const doubleQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -187,7 +191,7 @@ const doubleQuotStringValue =
                 combine(cls('\r', '\n'), err('Line breaks within strings are not allowed.')),
                 notCls('"'),
             ))),
-        erase(seq('"')),);
+        erase(seq('"')), );
 
 const backQuotStringValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
@@ -197,7 +201,7 @@ const backQuotStringValue =
                 stringEscapeSeq,
                 notCls('`'),
             ))),
-        erase(seq('`')),);
+        erase(seq('`')), );
 
 const stringValue =
     first(signleQuotStringValue, doubleQuotStringValue, backQuotStringValue);
@@ -223,7 +227,7 @@ const listValue = first(
     trans(tokens => {
         const ast: Ast = {token: '[]', type: 'list', value: []};
         for (const token of tokens) {
-            (ast.value as Array<AstValuesT>).push(token.value);
+            (ast.value as AstValuesT[]).push(token.value);
         }
         return [ast];
     })(
@@ -232,19 +236,19 @@ const listValue = first(
                 erase(repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => constExpr(first(seq(','), seq(']')))(input),),
-                erase(repeat(commentOrSpace)),)),
+                      input => constExpr(first(seq(','), seq(']')))(input), ),
+                erase(repeat(commentOrSpace)), )),
             repeat(combine(
                 erase(repeat(commentOrSpace),
                       seq(','),
                       repeat(commentOrSpace)),
                 first(input => listValue(input),   // NOTE: recursive definitions
                       input => objectValue(input), //       should place as lambda.
-                      input => constExpr(first(seq(','), seq(']')))(input),),
-                erase(repeat(commentOrSpace)),)),
+                      input => constExpr(first(seq(','), seq(']')))(input), ),
+                erase(repeat(commentOrSpace)), )),
             qty(0, 1)(erase(
                 seq(','),
-                repeat(commentOrSpace),)),
+                repeat(commentOrSpace), )),
             first(ahead(seq(']')), err('Unexpected token has appeared.')),
         erase(seq(']'))
     )
@@ -283,15 +287,15 @@ const objectValue = first(
             once(combine(
                 erase(repeat(commentOrSpace)),
                 objectKeyValuePair,
-                erase(repeat(commentOrSpace)),)),
+                erase(repeat(commentOrSpace)), )),
             repeat(combine(
                 erase(seq(','),
                       repeat(commentOrSpace)),
                 objectKeyValuePair,
-                erase(repeat(commentOrSpace)),)),
+                erase(repeat(commentOrSpace)), )),
             qty(0, 1)(erase(
                 seq(','),
-                repeat(commentOrSpace),)),
+                repeat(commentOrSpace), )),
             first(ahead(seq('}')), err('Unexpected token has appeared.')),
         erase(seq('}')),
     )
@@ -308,7 +312,7 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({token: '$noop', type: 'op', value: '$noop'})),
              $o.behind(1, () => ({token: '$noop', type: 'op', value: '$noop'}))(
-                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)),);
+                 $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)), );
 
 
 const unaryOp = (op: string, op1: any) => {
