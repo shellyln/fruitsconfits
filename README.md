@@ -1,5 +1,5 @@
 # FruitsConfits
-### A well typed _sugared_ parser combinator framework for TypeScript/JavaScript.
+### A well typed and _sugared_ parser combinator framework for TypeScript/JavaScript.
 
 <img src="https://raw.githubusercontent.com/shellyln/fruitsconfits/master/docs/images/logo.svg?sanitize=true" title="logo" style="width: 200px">
 
