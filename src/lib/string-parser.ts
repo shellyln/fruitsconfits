@@ -356,12 +356,12 @@ export function getStringParsers<C, R>(
         combine(erase(first(...prefixes)),
             cat(once(isHexNum), repeat(hexSep)), );
     const decimalIntegerNumber =
-        combine(qty(0, 1)(cls('+', '-')),
+        combine(cat(qty(0, 1)(cls('+', '-')),
             first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
-                seq('0'), ));
+                seq('0'), )));
     const bigDecimalIntegerNumber =
-        combine(decimalIntegerNumber,
-            erase(seq('n')), );
+        combine(cat(decimalIntegerNumber,
+            erase(seq('n')), ));
     const floatingPointNumber =
         combine(cat(qty(0, 1)(cls('+', '-')),
             first(combine(once(isNonZeroNumber), repeat(first(isNumber, cls('_')))),
