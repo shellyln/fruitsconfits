@@ -214,6 +214,16 @@ returns an object that containing the parsers.
 * [CSV parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/csv-parser/index.ts)
 * [formula parser](https://github.com/shellyln/fruitsconfits/blob/master/src/examples/formula-parser/index.ts)
 
+
+## Real world examples
+* [Tynder](https://github.com/shellyln/tynder)
+  * TypeScript friendly Data validator for JavaScript.
+  * [Code](https://github.com/shellyln/tynder/blob/master/src/compiler.ts)
+* [kanban-board-app](https://github.com/shellyln/kanban-board-app)
+  * Kanban style task management board app
+  * [Code](https://github.com/shellyln/kanban-board-app/blob/master/src/lib/csv.ts)
+
+
 ## License
 [ISC](https://github.com/shellyln/fruitsconfits/blob/master/LICENSE.md)  
 Copyright (c) 2019 Shellyl_N and Authors.
