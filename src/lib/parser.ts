@@ -11,6 +11,7 @@ import { ParserInputWithCtx,
 
 
 
+/*
 function getLineAndCol(src: string, pos: number) {
     let line = 1;
     let col = 1;
@@ -37,6 +38,7 @@ function getLineAndCol(src: string, pos: number) {
         col,
     });
 }
+*/
 
 
 export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
@@ -52,10 +54,16 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             .concat(...ar.slice(1));
         src = ar.join('\n') + '\n\n';
 
-        const lineAndCol = getLineAndCol(input.src, input.start);
         return (`parse error occured at position:${
-            input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
+            input.start} ${
             message ? ` ${message}` : ''}\n     ${src}`);
+
+        // TODO: Disabled due to performance issue
+        //
+        // const lineAndCol = getLineAndCol(input.src, input.start);
+        // return (`parse error occured at position:${
+        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
+        //     message ? ` ${message}` : ''}\n     ${src}`);
     } else {
         src = '     (object)\n          ^~~~~~~~';
         try {
@@ -82,10 +90,14 @@ export function makeMessage<T extends ArrayLike<T[number]>, C>(
         input: ParserInputWithCtx<T, C>, message?: string) {
 
     if (typeof input.src === 'string') {
-        const lineAndCol = getLineAndCol(input.src, input.start);
-        return (`parse faild at position:${
-            input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
-            message ? ` ${message}` : ''}`);
+        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
+
+        // TODO: Disabled due to performance issue
+        //
+        // const lineAndCol = getLineAndCol(input.src, input.start);
+        // return (`parse faild at position:${
+        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
+        //     message ? ` ${message}` : ''}`);
     } else {
         return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
     }
