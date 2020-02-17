@@ -11,6 +11,34 @@ import { ParserInputWithCtx,
 
 
 
+function getLineAndCol(src: string, pos: number) {
+    let line = 1;
+    let col = 1;
+
+    for (let i = 0; i <= pos; i++) {
+        switch (src[i]) {
+        case '\r':
+            if (src[i + 1] === '\n') {
+                i++;
+            }
+            // FALL_TURU
+        case '\n':
+            line++;
+            col = 1;
+            break;
+        default:
+            col++;
+            break;
+        }
+    }
+
+    return ({
+        line,
+        col,
+    });
+}
+
+
 export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
         input: ParserInputWithCtx<T, C>, message?: string) {
 
@@ -23,6 +51,11 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             .concat('          ^~~~~~~~')
             .concat(...ar.slice(1));
         src = ar.join('\n') + '\n\n';
+
+        const lineAndCol = getLineAndCol(input.src, input.start);
+        return (`parse error occured at position:${
+            input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
+            message ? ` ${message}` : ''}\n     ${src}`);
     } else {
         src = '     (object)\n          ^~~~~~~~';
         try {
@@ -37,18 +70,25 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
                 .concat(...ar.slice(2));
             src = ar.join('\n') + '\n\n';
         } catch (e) {}
-    }
 
-    return (`parse error occured at position:${
-        input.start} ${
-        message ? ` ${message}` : ''}\n     ${src}`);
+        return (`parse error occured at position:${
+            input.start} ${
+            message ? ` ${message}` : ''}\n     ${src}`);
+    }
 }
 
 
 export function makeMessage<T extends ArrayLike<T[number]>, C>(
         input: ParserInputWithCtx<T, C>, message?: string) {
 
-    return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
+    if (typeof input.src === 'string') {
+        const lineAndCol = getLineAndCol(input.src, input.start);
+        return (`parse faild at position:${
+            input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
+            message ? ` ${message}` : ''}`);
+    } else {
+        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
+    }
 }
 
 

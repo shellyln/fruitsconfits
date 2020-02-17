@@ -298,4 +298,11 @@ describe("foo", function() {
             .replace(/0555/, '0o555')
             .replace(/\\256/, '\\xae') + ')'));
     });
+    it("json-5", function() {
+        const src =
+        `
+            ]
+        `;
+        expect(() => parseJson(src)).toThrowError('parse faild at position:13 line:2 col:14  operator "charSequence([)"');
+    });
 });
