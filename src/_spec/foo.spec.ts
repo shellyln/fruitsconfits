@@ -309,4 +309,33 @@ describe("foo", function() {
             err.message.includes('parse failed at position:43 line:4 col:14  operator "charSequence([)"\n'
         ));
     });
+
+    it("string-parser-3", function() {
+        type Ctx = number;
+        type Ast = {token: string};
+
+        const {seq, cls, notCls, clsFn, classes, cat,
+               qty, repeat, zeroWidth, beginning, end,
+               first, or, combine, err, makeProgram} = getStringParsers<Ctx, Ast>({
+            rawToToken: token => ({token}),
+            concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
+        });
+        const zw = zeroWidth(() => ({token: '@'}));
+
+        const parse = makeProgram(combine(
+            err('Err!'),
+            cat(seq('Hello'), seq(','), ),
+            cat(zw, seq('Wor'), notCls('z', 'd'),
+                first(cls('z', 'y'),
+                      cls('d', 'l')), ),
+            cat(or(seq('?'),
+                   seq('!'),
+                   seq('!!'),
+                   qty(0, 10)(seq('!'))), ),
+            end(),
+        ));
+
+        const x = parse(parserInput('Hello,World!!!!!!!!!!', 1));
+        expect(x).toEqual({ succeeded: false, error: true, src: 'Hello,World!!!!!!!!!!', pos: 0, message: 'Err!' });
+    });
 });

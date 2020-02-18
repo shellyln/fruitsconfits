@@ -13,7 +13,13 @@ export type ParserInput<T extends ArrayLike<T[number]>> = ParserInputWithCtx<T, 
 export type StringParserInputWithCtx<C> = ParserInputWithCtx<string, C>;
 export type StringParserInput = StringParserInputWithCtx<undefined>;
 
-export class ParseError extends Error {}
+export class ParseError<T extends ArrayLike<T[number]>, C, R> extends Error {
+    public result: ParserFnFailedResult<T, C, R>;
+    constructor(result: ParserFnFailedResult<T, C, R>) {
+        super(result.message);
+        this.result = result;
+    }
+}
 
 
 export function parserInput<T extends ArrayLike<T[number]>>(src: T): ParserInputWithCtx<T, undefined>;

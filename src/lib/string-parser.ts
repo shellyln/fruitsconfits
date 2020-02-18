@@ -4,8 +4,7 @@
 
 
 import { StringParserFnWithCtx } from './types';
-import { makeMessage,
-         zeroWidth,
+import { zeroWidth,
          zeroWidthError,
          beginning,
          end,
@@ -16,7 +15,8 @@ import { makeMessage,
          lookAhead,
          lookBehind,
          ApplyProductionRulesArg,
-         applyProductionRules } from './parser';
+         applyProductionRules,
+         makeProgram } from './parser';
 
 
 
@@ -41,7 +41,7 @@ export function charSequence<C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "charSequence(${needle})"`),
+                message: `operator "charSequence(${needle})"`,
             });
         });
     });
@@ -80,7 +80,7 @@ export function charClass<C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "charClass(${needles.join(',')})"`),
+                message: `operator "charClass(${needles.join(',')})"`,
             });
         });
     });
@@ -104,7 +104,7 @@ export function charClassNot<C, R>(
                         error: false,
                         src: input.src,
                         pos: input.start,
-                        message: makeMessage(input, `operator "charClassNot(${needles.join(',')})"`),
+                        message: `operator "charClassNot(${needles.join(',')})"`,
                     });
                 }
             }
@@ -115,7 +115,7 @@ export function charClassNot<C, R>(
                     error: false,
                     src: input.src,
                     pos: input.start,
-                    message: makeMessage(input, `operator "charClassNot(${needles.join(',')})"`),
+                    message: `operator "charClassNot(${needles.join(',')})"`,
                 });
             }
             const c = String.fromCodePoint(p);
@@ -159,7 +159,7 @@ export function charClassByNeedleFn<C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "charClassByNeedleFn"`),
+                message: `operator "charClassByNeedleFn"`,
             });
         });
     });
@@ -418,5 +418,6 @@ export function getStringParsers<C, R>(
         ahead: (...parsers: Array<StringParserFnWithCtx<C, R>>) => lookAhead<string, C, R>(...parsers),   // TODO:
         behind: (n: number, helper?: () => R) => lookBehind<string, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<string, C, R>) => applyProductionRules<string, C, R>(args), // TODO:
+        makeProgram,
     });
 }

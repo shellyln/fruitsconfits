@@ -80,32 +80,6 @@ export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
-export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
-        input: ParserInputWithCtx<T, C>, message?: string) {
-    return message || '';
-}
-
-
-export function makeMessage<T extends ArrayLike<T[number]>, C>(
-        input: ParserInputWithCtx<T, C>, message?: string) {
-    return message || '';
-    /*
-    if (typeof input.src === 'string') {
-        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
-
-        // TODO: Disabled due to performance issue
-        //
-        // const lineAndCol = getLineAndCol(input.src, input.start);
-        // return (`parse faild at position:${
-        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
-        //     message ? ` ${message}` : ''}`);
-    } else {
-        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
-    }
-    */
-}
-
-
 export function zeroWidth<T extends ArrayLike<T[number]>, C, R>(
         helper?: () => R
         ): ParserFnWithCtx<T, C, R> {
@@ -130,13 +104,19 @@ export function zeroWidthError<T extends ArrayLike<T[number]>, C, R>(
         ): ParserFnWithCtx<T, C, R> {
 
     return (input => {
-        throw new ParseError(makeErrorMessage(input, message));
+        throw new ParseError({
+            succeeded: false,
+            error: true,
+            src: input.src,
+            pos: input.start,
+            message: message || '',
+        });
         // return ({
         //     succeeded: false,
         //     error: true,
         //     src: input.src,
         //     pos: input.start,
-        //     message: makeErrorMessage(input, message),
+        //     message: message || '',
         // });
     });
 }
@@ -161,7 +141,7 @@ export function beginning<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "beginning"'),
+            message: 'operator "beginning"',
         });
     });
 }
@@ -186,7 +166,7 @@ export function end<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "end"'),
+            message: 'operator "end"',
         });
     });
 }
@@ -225,7 +205,7 @@ export function quantify<T extends ArrayLike<T[number]>, C, R>(
                             error: false,
                             src: next.src,
                             pos: next.start,
-                            message: makeMessage(next, 'operator "quantify"'),
+                            message: 'operator "quantify"',
                         });
                     }
                 }
@@ -291,7 +271,7 @@ export function first<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "first"'),
+            message: 'operator "first"',
         });
     });
 }
@@ -333,7 +313,7 @@ export function or<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "or"'),
+            message: 'operator "or"',
         });
     });
 }
@@ -419,7 +399,7 @@ export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
                     error: false,
                     src: input.src,
                     pos: input.start,
-                    message: makeMessage(input, 'lookBehind: src is too short'),
+                    message: 'lookBehind: src is too short',
                 });
             }
             let next = {
@@ -521,7 +501,13 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
             }
             if (! completed) {
                 if (! args.check(next).succeeded) {
-                    throw new ParseError(makeErrorMessage(input));
+                    throw new ParseError({
+                        succeeded: false,
+                        error: true,
+                        src: input.src,
+                        pos: input.start,
+                        message: 'The application of production rules was not finished',
+                    });
                 }
             }
 
@@ -531,5 +517,22 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                 tokens: next.src,
             });
         });
+    });
+}
+
+
+export function makeProgram<T extends ArrayLike<T[number]>, C, R>(
+    parser: ParserFnWithCtx<T, C, R>): ParserFnWithCtx<T, C, R> {
+
+    return (input => {
+        try {
+            return parser(input);
+        } catch (e) {
+            if (e.result) {
+                return e.result;
+            } else {
+                throw e;
+            }
+        }
     });
 }

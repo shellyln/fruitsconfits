@@ -20,7 +20,8 @@ const $s = getStringParsers<Ctx, Ast>({
 });
 
 const {seq, cls, notCls, classes, cat,
-       repeat, end, first, combine, erase, trans, ahead} = $s;
+       repeat, end, first, combine, erase, trans, ahead,
+       makeProgram} = $s;
 
 
 const quoted = trans(input => input.length ? input : [''])(
@@ -44,10 +45,10 @@ const row = trans(input => [input as string[]])(
     cell,
     repeat(combine(erase(seq(',')), cell)), );
 
-const rows = combine(
+const rows = makeProgram(combine(
     row,
     repeat(combine(erase(classes.newline), row)),
-    end(), );
+    end(), ));
 
 
 export function parse(s: string) {

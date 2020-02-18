@@ -17,6 +17,11 @@
 npm install fruitsconfits
 ```
 
+### Breakikng changes
+
+See CHANGELOG.md.
+
+
 ## Features
 
 * Build a lexer or parser for a string or object list by parser combinator.
@@ -136,6 +141,9 @@ returns an object that containing the parsers.
     * args.rules : production rules
     * args.maxApply : maximum number of production rules applied
     * args.check : end condition of production rules
+* `makeProgram`
+  * parser to enclose most outer
+    * converts the internal `ParseError` thrown to a return value
 
 
 ### getObjectParsers(params)
@@ -206,6 +214,9 @@ returns an object that containing the parsers.
     * args.rules : production rules
     * args.maxApply : maximum number of production rules applied
     * args.check : end condition of production rules
+* `makeProgram`
+  * parser to enclose most outer
+    * converts the internal `ParseError` thrown to a return value
 
 
 ## Examples

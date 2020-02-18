@@ -4,8 +4,7 @@
 
 
 import { ParserFnWithCtx } from './types';
-import { makeMessage,
-         zeroWidth,
+import { zeroWidth,
          zeroWidthError,
          beginning,
          end,
@@ -16,7 +15,8 @@ import { makeMessage,
          lookAhead,
          lookBehind,
          ApplyProductionRulesArg,
-         applyProductionRules } from './parser';
+         applyProductionRules,
+         makeProgram } from './parser';
 
 
 
@@ -55,7 +55,7 @@ export function objSequence<T extends ArrayLike<T[number]>, C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "objSequence(${needle})"`),
+                message: `operator "objSequence(${needle})"`,
             });
         });
     });
@@ -94,7 +94,7 @@ export function objClass<T extends ArrayLike<T[number]>, C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "objClass(${needles.join(',')})"`),
+                message: `operator "objClass(${needles.join(',')})"`,
             });
         });
     });
@@ -126,7 +126,7 @@ export function objClassNot<T extends ArrayLike<T[number]>, C, R>(
                             error: false,
                             src: input.src,
                             pos: input.start,
-                            message: makeMessage(input, `operator "objClassNot(${needles.join(',')})"`),
+                            message: `operator "objClassNot(${needles.join(',')})"`,
                         });
                     }
                 }
@@ -173,7 +173,7 @@ export function objClassByNeedleFn<T extends ArrayLike<T[number]>, C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: makeMessage(input, `operator "objClassByNeedleFn"`),
+                message: `operator "objClassByNeedleFn"`,
             });
         });
     });
@@ -216,5 +216,6 @@ export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         ahead: (...parsers: Array<ParserFnWithCtx<T, C, R>>) => lookAhead<T, C, R>(...parsers), // TODO:
         behind: (n: number, helper?: () => R) => lookBehind<T, C, R>(n, helper),
         rules: (args: ApplyProductionRulesArg<T, C, R>) => applyProductionRules<T, C, R>(args), // TODO:
+        makeProgram,
     });
 }
