@@ -9,4 +9,7 @@
   * To format position and nearby source text,  
     use `makeProgram()` parser function, and convert `ParseError` thrown to a return value.
 
+### Changes
+* Update dependencies.
+
 ---

@@ -640,8 +640,7 @@ const program = makeProgram(trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
     expr(end(), true),
     erase(repeat(commentOrSpace)),
-    end(),
-));
+    end(), ));
 
 
 export function parse(s: string) {

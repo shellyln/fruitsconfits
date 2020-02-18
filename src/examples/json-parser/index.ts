@@ -455,8 +455,7 @@ const program = makeProgram(trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
     first(listValue, objectValue, constExpr(end())),
     erase(repeat(commentOrSpace)),
-    end(),
-));
+    end(), ));
 
 
 export function parse(s: string) {
