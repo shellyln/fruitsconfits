@@ -3,8 +3,9 @@
 // https://github.com/shellyln
 
 
-import { parserInput }      from '../../lib/types';
-import { getStringParsers } from '../../lib/string-parser';
+import { parserInput }        from '../../lib/types';
+import { formatErrorMessage } from '../../lib/parser';
+import { getStringParsers }   from '../../lib/string-parser';
 
 
 
@@ -19,7 +20,8 @@ const $s = getStringParsers<Ctx, Ast>({
 });
 
 const {seq, cls, notCls, classes, cat,
-       repeat, end, first, combine, erase, trans, ahead} = $s;
+       repeat, end, first, combine, erase, trans, ahead,
+       makeProgram} = $s;
 
 
 const quoted = trans(input => input.length ? input : [''])(
@@ -43,16 +45,16 @@ const row = trans(input => [input as string[]])(
     cell,
     repeat(combine(erase(seq(',')), cell)), );
 
-const rows = combine(
+const rows = makeProgram(combine(
     row,
     repeat(combine(erase(classes.newline), row)),
-    end(), );
+    end(), ));
 
 
 export function parse(s: string) {
     const z = rows(parserInput(s));
     if (! z.succeeded) {
-        throw new Error(z.message);
+        throw new Error(formatErrorMessage(z));
     }
     return z.tokens as string[][];
 }

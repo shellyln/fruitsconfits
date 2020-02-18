@@ -11,7 +11,6 @@ import { ParserInputWithCtx,
 
 
 
-/*
 function getLineAndCol(src: string, pos: number) {
     let line = 1;
     let col = 1;
@@ -38,15 +37,15 @@ function getLineAndCol(src: string, pos: number) {
         col,
     });
 }
-*/
 
 
-export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
-        input: ParserInputWithCtx<T, C>, message?: string) {
+export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
+    result: ParserFnFailedResult<T, C, R>) {
 
+    let msg = '';
     let src = '';
-    if (typeof input.src === 'string') {
-        src = input.src.slice(Math.max(input.start - 5, 0), input.start + 55);
+    if (typeof result.src === 'string') {
+        src = result.src.slice(Math.max(result.pos - 5, 0), result.pos + 55);
 
         let ar = src.split(/\r\n|\n|\r/);
         ar = ar.slice(0, 1)
@@ -54,23 +53,17 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             .concat(...ar.slice(1));
         src = ar.join('\n') + '\n\n';
 
-        return (`parse error occured at position:${
-            input.start} ${
-            message ? ` ${message}` : ''}\n     ${src}`);
-
-        // TODO: Disabled due to performance issue
-        //
-        // const lineAndCol = getLineAndCol(input.src, input.start);
-        // return (`parse error occured at position:${
-        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
-        //     message ? ` ${message}` : ''}\n     ${src}`);
+        const lineAndCol = getLineAndCol(result.src, result.pos);
+        msg =  (`parse failed at position:${
+            result.pos} line:${lineAndCol.line} col:${lineAndCol.col} ${
+            result.message ? ` ${result.message}` : ''}\n     ${src}`);
     } else {
         src = '     (object)\n          ^~~~~~~~';
         try {
             src = '     ' +
-                JSON.stringify((input.src as any).slice(Math.max(input.start - 10, 0), input.start)) + '\n          ' +
-                JSON.stringify((input.src as any).slice(input.start, input.start + 1)) + '\n          ' +
-                JSON.stringify((input.src as any).slice(input.start + 1, input.start + 10));
+                JSON.stringify((result.src as any).slice(Math.max(result.pos - 10, 0), result.pos)) + '\n          ' +
+                JSON.stringify((result.src as any).slice(result.pos, result.pos + 1)) + '\n          ' +
+                JSON.stringify((result.src as any).slice(result.pos + 1, result.pos + 10));
 
             let ar = src.split(/\r\n|\n|\r/);
             ar = ar.slice(0, 2)
@@ -79,28 +72,11 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             src = ar.join('\n') + '\n\n';
         } catch (e) {}
 
-        return (`parse error occured at position:${
-            input.start} ${
-            message ? ` ${message}` : ''}\n     ${src}`);
+        msg = (`parse failed at position:${
+            result.pos} ${
+            result.message ? ` ${result.message}` : ''}\n     ${src}`);
     }
-}
-
-
-export function makeMessage<T extends ArrayLike<T[number]>, C>(
-        input: ParserInputWithCtx<T, C>, message?: string) {
-
-    if (typeof input.src === 'string') {
-        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
-
-        // TODO: Disabled due to performance issue
-        //
-        // const lineAndCol = getLineAndCol(input.src, input.start);
-        // return (`parse faild at position:${
-        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
-        //     message ? ` ${message}` : ''}`);
-    } else {
-        return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
-    }
+    return msg;
 }
 
 
@@ -128,13 +104,19 @@ export function zeroWidthError<T extends ArrayLike<T[number]>, C, R>(
         ): ParserFnWithCtx<T, C, R> {
 
     return (input => {
-        throw new ParseError(makeErrorMessage(input, message));
+        throw new ParseError({
+            succeeded: false,
+            error: true,
+            src: input.src,
+            pos: input.start,
+            message: message || '',
+        });
         // return ({
         //     succeeded: false,
         //     error: true,
         //     src: input.src,
         //     pos: input.start,
-        //     message: makeErrorMessage(input, message),
+        //     message: message || '',
         // });
     });
 }
@@ -159,7 +141,7 @@ export function beginning<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "beginning"'),
+            message: 'operator "beginning"',
         });
     });
 }
@@ -184,7 +166,7 @@ export function end<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "end"'),
+            message: 'operator "end"',
         });
     });
 }
@@ -223,7 +205,7 @@ export function quantify<T extends ArrayLike<T[number]>, C, R>(
                             error: false,
                             src: next.src,
                             pos: next.start,
-                            message: makeMessage(next, 'operator "quantify"'),
+                            message: 'operator "quantify"',
                         });
                     }
                 }
@@ -289,7 +271,7 @@ export function first<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "first"'),
+            message: 'operator "first"',
         });
     });
 }
@@ -331,7 +313,7 @@ export function or<T extends ArrayLike<T[number]>, C, R>(
             error: false,
             src: input.src,
             pos: input.start,
-            message: makeMessage(input, 'operator "or"'),
+            message: 'operator "or"',
         });
     });
 }
@@ -417,7 +399,7 @@ export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
                     error: false,
                     src: input.src,
                     pos: input.start,
-                    message: makeMessage(input, 'lookBehind: src is too short'),
+                    message: 'lookBehind: src is too short',
                 });
             }
             let next = {
@@ -519,7 +501,13 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
             }
             if (! completed) {
                 if (! args.check(next).succeeded) {
-                    throw new ParseError(makeErrorMessage(input));
+                    throw new ParseError({
+                        succeeded: false,
+                        error: true,
+                        src: input.src,
+                        pos: input.start,
+                        message: 'The application of production rules was not finished',
+                    });
                 }
             }
 
@@ -529,5 +517,22 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                 tokens: next.src,
             });
         });
+    });
+}
+
+
+export function makeProgram<T extends ArrayLike<T[number]>, C, R>(
+    parser: ParserFnWithCtx<T, C, R>): ParserFnWithCtx<T, C, R> {
+
+    return (input => {
+        try {
+            return parser(input);
+        } catch (e) {
+            if (e.result) {
+                return e.result;
+            } else {
+                throw e;
+            }
+        }
     });
 }

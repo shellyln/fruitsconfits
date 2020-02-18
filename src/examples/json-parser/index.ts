@@ -7,12 +7,12 @@
 // tslint:disable: interface-over-type-literal
 // tslint:disable: align
 
-import { ParseError,
-         ParserInputWithCtx,
+import { ParserInputWithCtx,
          parserInput,
-         ParserFnWithCtx }  from '../../lib/types';
-import { getStringParsers } from '../../lib/string-parser';
-import { getObjectParsers } from '../../lib/object-parser';
+         ParserFnWithCtx }    from '../../lib/types';
+import { formatErrorMessage } from '../../lib/parser';
+import { getStringParsers }   from '../../lib/string-parser';
+import { getObjectParsers }   from '../../lib/object-parser';
 
 
 
@@ -37,7 +37,8 @@ const $o = getObjectParsers<Ast[], Ctx, Ast>({
 
 const {seq, cls, notCls, clsFn, classes, numbers, cat,
        once, repeat, qty, zeroWidth, err, beginning, end,
-       first, or, combine, erase, trans, ahead, rules} = $s;
+       first, or, combine, erase, trans, ahead, rules,
+       makeProgram} = $s;
 
 
 const lineComment =
@@ -322,7 +323,7 @@ const unaryOp = (op: string, op1: any) => {
     case '-':
         return -op1;
     default:
-        throw new ParseError('Unknown operator has appeared.' + op);
+        throw new Error('Unknown operator has appeared.' + op);
     }
 };
 
@@ -343,7 +344,7 @@ const binaryOp = (op: string, op1: any, op2: any) => {
     case ',':
         return op2;
     default:
-        throw new ParseError('Unknown operator has appeared.' + op);
+        throw new Error('Unknown operator has appeared.' + op);
     }
 };
 // NOTE: Use the following function to return AST (abstract syntax tree).
@@ -450,18 +451,18 @@ const constExpr = (edge: ParserFnWithCtx<string, Ctx, Ast>) => rules({
 })(constExprInner(edge, false));
 
 
-const program = trans(tokens => tokens)(
+const program = makeProgram(trans(tokens => tokens)(
     erase(repeat(commentOrSpace)),
     first(listValue, objectValue, constExpr(end())),
     erase(repeat(commentOrSpace)),
     end(),
-);
+));
 
 
 export function parse(s: string) {
     const z = program(parserInput(s));
     if (! z.succeeded) {
-        throw new Error(z.message);
+        throw new Error(formatErrorMessage(z));
     }
     return z.tokens[0].value;
 }
