@@ -3,8 +3,9 @@
 // https://github.com/shellyln
 
 
-import { parserInput }      from '../../lib/types';
-import { getStringParsers } from '../../lib/string-parser';
+import { parserInput }        from '../../lib/types';
+import { formatErrorMessage } from '../../lib/parser';
+import { getStringParsers }   from '../../lib/string-parser';
 
 
 
@@ -52,7 +53,7 @@ const rows = combine(
 export function parse(s: string) {
     const z = rows(parserInput(s));
     if (! z.succeeded) {
-        throw new Error(z.message);
+        throw new Error(formatErrorMessage(z));
     }
     return z.tokens as string[][];
 }

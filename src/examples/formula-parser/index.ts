@@ -8,10 +8,11 @@
 import { ParseError,
          ParserInputWithCtx,
          parserInput,
-         ParserFnWithCtx }  from '../../lib/types';
-import { getStringParsers } from '../../lib/string-parser';
-import { getObjectParsers } from '../../lib/object-parser';
-import * as liyad           from 'liyad';
+         ParserFnWithCtx }    from '../../lib/types';
+import { formatErrorMessage } from '../../lib/parser';
+import { getStringParsers }   from '../../lib/string-parser';
+import { getObjectParsers }   from '../../lib/object-parser';
+import * as liyad             from 'liyad';
 
 
 
@@ -646,7 +647,7 @@ const program = trans(tokens => tokens)(
 export function parse(s: string) {
     const z = program(parserInput(s));
     if (! z.succeeded) {
-        throw new Error(z.message);
+        throw new Error(formatErrorMessage(z));
     }
     return z.tokens[0];
 }

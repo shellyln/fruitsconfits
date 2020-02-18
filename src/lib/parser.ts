@@ -11,7 +11,6 @@ import { ParserInputWithCtx,
 
 
 
-/*
 function getLineAndCol(src: string, pos: number) {
     let line = 1;
     let col = 1;
@@ -38,15 +37,15 @@ function getLineAndCol(src: string, pos: number) {
         col,
     });
 }
-*/
 
 
-export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
-        input: ParserInputWithCtx<T, C>, message?: string) {
+export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
+    result: ParserFnFailedResult<T, C, R>) {
 
+    let msg = '';
     let src = '';
-    if (typeof input.src === 'string') {
-        src = input.src.slice(Math.max(input.start - 5, 0), input.start + 55);
+    if (typeof result.src === 'string') {
+        src = result.src.slice(Math.max(result.pos - 5, 0), result.pos + 55);
 
         let ar = src.split(/\r\n|\n|\r/);
         ar = ar.slice(0, 1)
@@ -54,23 +53,17 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             .concat(...ar.slice(1));
         src = ar.join('\n') + '\n\n';
 
-        return (`parse error occured at position:${
-            input.start} ${
-            message ? ` ${message}` : ''}\n     ${src}`);
-
-        // TODO: Disabled due to performance issue
-        //
-        // const lineAndCol = getLineAndCol(input.src, input.start);
-        // return (`parse error occured at position:${
-        //     input.start} line:${lineAndCol.line} col:${lineAndCol.col} ${
-        //     message ? ` ${message}` : ''}\n     ${src}`);
+        const lineAndCol = getLineAndCol(result.src, result.pos);
+        msg =  (`parse failed at position:${
+            result.pos} line:${lineAndCol.line} col:${lineAndCol.col} ${
+            result.message ? ` ${result.message}` : ''}\n     ${src}`);
     } else {
         src = '     (object)\n          ^~~~~~~~';
         try {
             src = '     ' +
-                JSON.stringify((input.src as any).slice(Math.max(input.start - 10, 0), input.start)) + '\n          ' +
-                JSON.stringify((input.src as any).slice(input.start, input.start + 1)) + '\n          ' +
-                JSON.stringify((input.src as any).slice(input.start + 1, input.start + 10));
+                JSON.stringify((result.src as any).slice(Math.max(result.pos - 10, 0), result.pos)) + '\n          ' +
+                JSON.stringify((result.src as any).slice(result.pos, result.pos + 1)) + '\n          ' +
+                JSON.stringify((result.src as any).slice(result.pos + 1, result.pos + 10));
 
             let ar = src.split(/\r\n|\n|\r/);
             ar = ar.slice(0, 2)
@@ -79,16 +72,24 @@ export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
             src = ar.join('\n') + '\n\n';
         } catch (e) {}
 
-        return (`parse error occured at position:${
-            input.start} ${
-            message ? ` ${message}` : ''}\n     ${src}`);
+        msg = (`parse failed at position:${
+            result.pos} ${
+            result.message ? ` ${result.message}` : ''}\n     ${src}`);
     }
+    return msg;
+}
+
+
+export function makeErrorMessage<T extends ArrayLike<T[number]>, C>(
+        input: ParserInputWithCtx<T, C>, message?: string) {
+    return message || '';
 }
 
 
 export function makeMessage<T extends ArrayLike<T[number]>, C>(
         input: ParserInputWithCtx<T, C>, message?: string) {
-
+    return message || '';
+    /*
     if (typeof input.src === 'string') {
         return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
 
@@ -101,6 +102,7 @@ export function makeMessage<T extends ArrayLike<T[number]>, C>(
     } else {
         return (`parse faild at position:${input.start} ${message ? ` ${message}` : ''}`);
     }
+    */
 }
 
 

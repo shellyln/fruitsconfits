@@ -10,9 +10,10 @@
 import { ParseError,
          ParserInputWithCtx,
          parserInput,
-         ParserFnWithCtx }  from '../../lib/types';
-import { getStringParsers } from '../../lib/string-parser';
-import { getObjectParsers } from '../../lib/object-parser';
+         ParserFnWithCtx }    from '../../lib/types';
+import { formatErrorMessage } from '../../lib/parser';
+import { getStringParsers }   from '../../lib/string-parser';
+import { getObjectParsers }   from '../../lib/object-parser';
 
 
 
@@ -461,7 +462,7 @@ const program = trans(tokens => tokens)(
 export function parse(s: string) {
     const z = program(parserInput(s));
     if (! z.succeeded) {
-        throw new Error(z.message);
+        throw new Error(formatErrorMessage(z));
     }
     return z.tokens[0].value;
 }
