@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1
+### Changes
+* Update dependencies.
+
+
 ## v0.3.0
 ### Breaking changes
 * Error messages no longer include source position information and nearby source text.
@@ -12,4 +17,3 @@
 ### Changes
 * Update dependencies.
 
----
