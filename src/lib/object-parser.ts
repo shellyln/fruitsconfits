@@ -48,6 +48,8 @@ export function objSequence<T extends ArrayLike<T[number]>, C, R>(
                     start: input.start + needle.length,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(needle)],
             } : {
@@ -87,6 +89,8 @@ export function objClass<T extends ArrayLike<T[number]>, C, R>(
                     start: input.start + 1,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(needles[index])],
             } : {
@@ -139,6 +143,8 @@ export function objClassNot<T extends ArrayLike<T[number]>, C, R>(
                     start: input.start + 1,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(input.src[input.start])],
             });
@@ -166,6 +172,8 @@ export function objClassByNeedleFn<T extends ArrayLike<T[number]>, C, R>(
                     start: input.start + 1,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(input.src[input.start])],
             } : {

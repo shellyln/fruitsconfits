@@ -8,6 +8,8 @@ export interface ParserInputWithCtx<T extends ArrayLike<T[number]>, C> {
     start: number;
     end: number;
     context: C;
+    templateArgs?: any[];       // for "template strings"
+    templateArgsPos?: number[]; // for "template strings"
 }
 export type ParserInput<T extends ArrayLike<T[number]>> = ParserInputWithCtx<T, undefined>;
 export type StringParserInputWithCtx<C> = ParserInputWithCtx<string, C>;
@@ -30,6 +32,30 @@ export function parserInput<T extends ArrayLike<T[number]>, C>(src: T, context?:
         start: 0,
         end: src.length,
         context: context as any,
+    });
+}
+
+
+export function stringTemplatesParserInput<C>(src: TemplateStringsArray, args: any[], context?: C): ParserInputWithCtx<string, C> {
+    const templateArgsPos: number[] = [];
+    let pos = 0;
+    if (args.length) {
+        for (let i = 0; i < src.length; i++) {
+            const x = src[i];
+            if (i < args.length) {
+                templateArgsPos.push(pos + x.length);
+                pos += x.length + 1;
+            }
+        }
+    }
+    const joined = src.join('\x00');
+    return ({
+        src: joined,
+        start: 0,
+        end: joined.length,
+        context: context as any,
+        templateArgs: args,
+        templateArgsPos,
     });
 }
 

@@ -92,6 +92,8 @@ export function zeroWidth<T extends ArrayLike<T[number]>, C, R>(
                 start: input.start,
                 end: input.end,
                 context: input.context,
+                templateArgs: input.templateArgs,
+                templateArgsPos: input.templateArgsPos,
             },
             tokens: helper ? [helper()] : [],
         });
@@ -134,6 +136,8 @@ export function beginning<T extends ArrayLike<T[number]>, C, R>(
                 start: input.start,
                 end: input.end,
                 context: input.context,
+                templateArgs: input.templateArgs,
+                templateArgsPos: input.templateArgsPos,
             },
             tokens: helper ? [helper()] : [],
         } : {
@@ -159,6 +163,8 @@ export function end<T extends ArrayLike<T[number]>, C, R>(
                 start: input.start,
                 end: input.end,
                 context: input.context,
+                templateArgs: input.templateArgs,
+                templateArgsPos: input.templateArgsPos,
             },
             tokens: helper ? [helper()] : [],
         } : {
@@ -228,6 +234,8 @@ export function quantify<T extends ArrayLike<T[number]>, C, R>(
                         start: input.start,
                         end: input.end,
                         context: input.context,
+                        templateArgs: input.templateArgs,
+                        templateArgsPos: input.templateArgsPos,
                     },
                     tokens: [],
                 });
@@ -346,6 +354,8 @@ export function transform<T extends ArrayLike<T[number]>, C, R>(
                     start: next.start,
                     end: next.end,
                     context: ctxTrans(next.context),
+                    templateArgs: next.templateArgs,
+                    templateArgsPos: next.templateArgsPos,
                 } : next,
                 tokens: t2,
             });
@@ -402,11 +412,13 @@ export function lookBehind<T extends ArrayLike<T[number]>, C, R>(
                     message: 'lookBehind: src is too short',
                 });
             }
-            let next = {
+            let next: ParserInputWithCtx<T, C> = {
                 src: input.src,
                 start: input.start - n,
                 end: input.end,
                 context: input.context,
+                templateArgs: input.templateArgs,
+                templateArgsPos: input.templateArgsPos,
             };
 
             for (const parser of parsers) {
@@ -485,6 +497,8 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                                 start: 0,
                                 end: nextSrc.length,
                                 context: x.next.context,
+                                templateArgs: x.next.templateArgs,
+                                templateArgsPos: x.next.templateArgsPos,
                             };
                             if (args.check(next).succeeded) {
                                 completed = true;
