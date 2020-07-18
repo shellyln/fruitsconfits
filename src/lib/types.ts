@@ -8,8 +8,8 @@ export interface ParserInputWithCtx<T extends ArrayLike<T[number]>, C> {
     start: number;
     end: number;
     context: C;
-    templateArgs?: any[];       // for "template strings"
-    templateArgsPos?: number[]; // for "template strings"
+    templateArgs?: any[];       // For "template strings". NOTE: For backword compatibility, this is optional.
+    templateArgsPos?: number[]; // For "template strings". NOTE: For backword compatibility, this is optional.
 }
 export type ParserInput<T extends ArrayLike<T[number]>> = ParserInputWithCtx<T, undefined>;
 export type StringParserInputWithCtx<C> = ParserInputWithCtx<string, C>;
@@ -32,6 +32,8 @@ export function parserInput<T extends ArrayLike<T[number]>, C>(src: T, context?:
         start: 0,
         end: src.length,
         context: context as any,
+        templateArgs: [],
+        templateArgsPos: [],
     });
 }
 

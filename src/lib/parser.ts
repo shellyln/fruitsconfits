@@ -486,6 +486,8 @@ export function applyProductionRules<T extends ArrayLike<T[number]>, C, R>(
                             start: rtol ? len - s : s,
                             end: next.src.length,
                             context: next.context,
+                            templateArgs: next.templateArgs,
+                            templateArgsPos: next.templateArgsPos,
                         });
                         if (x.succeeded) {
                             matched = true;
