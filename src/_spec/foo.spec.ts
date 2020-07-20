@@ -9,7 +9,7 @@ import { ParserInputWithCtx,
          StringParserInput,
          ParseError,
          parserInput,
-         stringTemplatesParserInput,
+         templateStringsParserInput,
          ParserFnSucceededResult,
          ParserFnFailedResult,
          ParserFnWithCtx,
@@ -354,7 +354,7 @@ describe("foo", function() {
         const parse = makeProgram(combine(seq('Hello,'), isParam(o => String(o) === 'world'), seq('!'), end()));
 
         function exec(strings: TemplateStringsArray, ...values: any[]) {
-            return parse(stringTemplatesParserInput(strings, values));
+            return parse(templateStringsParserInput(strings, values));
         }
 
         {
@@ -388,7 +388,7 @@ describe("foo", function() {
         const parse = makeProgram(combine(seq('Hello,'), isParam(o => String(o) === 'world', o => (o as string).toUpperCase()), seq('!'), end()));
 
         function exec(strings: TemplateStringsArray, ...values: any[]) {
-            return parse(stringTemplatesParserInput(strings, values));
+            return parse(templateStringsParserInput(strings, values));
         }
 
         {
@@ -422,7 +422,7 @@ describe("foo", function() {
         const parse = makeProgram(combine(isParam(o => String(o) === 'world', o => (o as string).toUpperCase()), end()));
 
         function exec(strings: TemplateStringsArray, ...values: any[]) {
-            return parse(stringTemplatesParserInput(strings, values));
+            return parse(templateStringsParserInput(strings, values));
         }
 
         {

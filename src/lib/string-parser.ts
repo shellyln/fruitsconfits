@@ -174,7 +174,7 @@ export function charClassByNeedleFn<C, R>(
 }
 
 
-export function stringTemplatesParam<C, R>(
+export function templateStringsParam<C, R>(
         criteria: (o: any) => boolean, conv?: (o: any) => any): StringParserFnWithCtx<C, R> {
 
     return (input => {
@@ -452,7 +452,7 @@ export function getStringParsers<C, R>(
             bigint: bigDecimalIntegerNumber,
             float: floatingPointNumber,
         },
-        isParam: stringTemplatesParam,
+        isParam: templateStringsParam,
         cat,
         once,
         repeat,

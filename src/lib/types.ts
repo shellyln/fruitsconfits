@@ -38,25 +38,25 @@ export function parserInput<T extends ArrayLike<T[number]>, C>(src: T, context?:
 }
 
 
-export function stringTemplatesParserInput<C>(src: TemplateStringsArray, args: any[], context?: C): ParserInputWithCtx<string, C> {
+export function templateStringsParserInput<C>(strings: TemplateStringsArray, values: any[], context?: C): ParserInputWithCtx<string, C> {
     const templateArgsPos: number[] = [];
     let pos = 0;
-    if (args.length) {
-        for (let i = 0; i < src.length; i++) {
-            const x = src[i];
-            if (i < args.length) {
+    if (values.length) {
+        for (let i = 0; i < strings.length; i++) {
+            const x = strings[i];
+            if (i < values.length) {
                 templateArgsPos.push(pos + x.length);
                 pos += x.length + 1;
             }
         }
     }
-    const joined = src.join('\x00');
+    const joined = strings.join('\x00');
     return ({
         src: joined,
         start: 0,
         end: joined.length,
         context: context as any,
-        templateArgs: args,
+        templateArgs: values,
         templateArgsPos,
     });
 }
