@@ -104,6 +104,8 @@ returns an object that containing the parsers.
     * parse a javascript style bigint number
   * `float`
     * parse a javascript style floating point number
+* `isParam(criteria: (o: any) => boolean, conv?: (o: any) => any)`
+  * parser to match a ES6 template strings parameter value
 * `cat(...parsers: StringParserFnWithCtx<C, R>[])`
   * parser that combine and concatenate the parsing results of `parsers`
 * `once(parser: StringParserFnWithCtx<C, R>)`
@@ -217,6 +219,52 @@ returns an object that containing the parsers.
 * `makeProgram`
   * parser to enclose most outer
     * converts the internal `ParseError` thrown to a return value
+
+
+### parserInput(src: T, context?: C)
+
+Build a parser input.
+
+Example:
+```ts
+...
+
+const program = makeProgram(trans(tokens => tokens)(
+    erase(repeat(commentOrSpace)),
+    first(listValue, objectValue, constExpr(end())),
+    erase(repeat(commentOrSpace)),
+    end(), ));
+
+export function parse(s: string) {
+    const z = program(parserInput(s));
+    if (! z.succeeded) {
+        throw new Error(formatErrorMessage(z));
+    }
+    return z.tokens[0].value;
+}
+```
+
+
+### templateStringsParserInput(strings, values, context?: C)
+
+Build a parser input from ES6 template strings.
+
+Example:
+```ts
+const program = makeProgram(combine(
+    seq('Hello,'),
+    isParam(o => String(o) === 'world'),
+    seq('!'),
+    end(), ));
+
+export function parse(strings: TemplateStringsArray, ...values: any[]) {
+    const z = program(templateStringsParserInput(strings, values));
+    if (! z.succeeded) {
+        throw new Error(formatErrorMessage(z));
+    }
+    return z.tokens;
+}
+```
 
 
 ## Examples

@@ -34,6 +34,8 @@ export function charSequence<C, R>(
                     start: input.start + needle.length,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(needle)],
             } : {
@@ -73,6 +75,8 @@ export function charClass<C, R>(
                     start: input.start + needles[index].length,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(needles[index])],
             } : {
@@ -127,6 +131,8 @@ export function charClassNot<C, R>(
                     start: input.start + c.length,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(c)],
             });
@@ -152,6 +158,8 @@ export function charClassByNeedleFn<C, R>(
                     start: input.start + len,
                     end: input.end,
                     context: input.context,
+                    templateArgs: input.templateArgs,
+                    templateArgsPos: input.templateArgsPos,
                 },
                 tokens: [helper(src.substring(0, len))],
             } : {
@@ -161,6 +169,48 @@ export function charClassByNeedleFn<C, R>(
                 pos: input.start,
                 message: `operator "charClassByNeedleFn"`,
             });
+        });
+    });
+}
+
+
+export function templateStringsParam<C, R>(
+        criteria: (o: any) => boolean, conv?: (o: any) => any): StringParserFnWithCtx<C, R> {
+
+    return (input => {
+        const src = input.src.slice(input.start, input.start + 1);
+        if (src === '\x00') {
+            if (input.templateArgsPos) {
+                let argIdx = -1;
+                const strIdx = input.templateArgsPos.findIndex((v, i) => {
+                    argIdx = i;
+                    return v === input.start;
+                });
+                if (0 <= strIdx) {
+                    const o = input.templateArgs![argIdx];
+                    if (criteria(o)) {
+                        return ({
+                            succeeded: true,
+                            next: {
+                                src: input.src,
+                                start: input.start + 1,
+                                end: input.end,
+                                context: input.context,
+                                templateArgs: input.templateArgs,
+                                templateArgsPos: input.templateArgsPos,
+                            },
+                            tokens: [(conv ? conv(o) : o)],
+                        });
+                    }
+                }
+            }
+        }
+        return ({
+            succeeded: false,
+            error: false,
+            src: input.src,
+            pos: input.start,
+            message: `operator "stringTemplatesParam()"`,
         });
     });
 }
@@ -402,6 +452,7 @@ export function getStringParsers<C, R>(
             bigint: bigDecimalIntegerNumber,
             float: floatingPointNumber,
         },
+        isParam: templateStringsParam,
         cat,
         once,
         repeat,

@@ -9,6 +9,7 @@ import { ParserInputWithCtx,
          StringParserInput,
          ParseError,
          parserInput,
+         templateStringsParserInput,
          ParserFnSucceededResult,
          ParserFnFailedResult,
          ParserFnWithCtx,
@@ -337,5 +338,107 @@ describe("foo", function() {
 
         const x = parse(parserInput('Hello,World!!!!!!!!!!', 1));
         expect(x).toEqual({ succeeded: false, error: true, src: 'Hello,World!!!!!!!!!!', pos: 0, message: 'Err!' });
+    });
+
+    it("template-strings-1", function() {
+        type Ctx = number;
+        type Ast = {token: string};
+
+        const {seq, cls, notCls, clsFn, isParam, classes, cat,
+               qty, repeat, zeroWidth, beginning, end,
+               first, or, combine, err, makeProgram} = getStringParsers<Ctx, Ast>({
+            rawToToken: token => ({token}),
+            concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
+        });
+
+        const parse = makeProgram(combine(seq('Hello,'), isParam(o => String(o) === 'world'), seq('!'), end()));
+
+        function exec(strings: TemplateStringsArray, ...values: any[]) {
+            return parse(templateStringsParserInput(strings, values));
+        }
+
+        {
+            const result = exec`Hello,${'world'}!`;
+            expect(result.succeeded).toEqual(true);
+            expect(result.succeeded ? result.tokens : null).toEqual([{ token: 'Hello,' }, 'world', { token: '!' }] as any);
+        }
+
+        {
+            const result = exec`Hello${'world'}!`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello\x00!', pos: 0, message: 'operator "charSequence(Hello,)"' });
+        }
+
+        {
+            const result = exec`Hello,${'world'}?`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello,\x00?', pos: 7, message: 'operator "charSequence(!)"' });
+        }
+    });
+
+    it("template-strings-2", function() {
+        type Ctx = number;
+        type Ast = {token: string};
+
+        const {seq, cls, notCls, clsFn, isParam, classes, cat,
+               qty, repeat, zeroWidth, beginning, end,
+               first, or, combine, err, makeProgram} = getStringParsers<Ctx, Ast>({
+            rawToToken: token => ({token}),
+            concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
+        });
+
+        const parse = makeProgram(combine(seq('Hello,'), isParam(o => String(o) === 'world', o => (o as string).toUpperCase()), seq('!'), end()));
+
+        function exec(strings: TemplateStringsArray, ...values: any[]) {
+            return parse(templateStringsParserInput(strings, values));
+        }
+
+        {
+            const result = exec`Hello,${'world'}!`;
+            expect(result.succeeded).toEqual(true);
+            expect(result.succeeded ? result.tokens : null).toEqual([{ token: 'Hello,' }, 'WORLD', { token: '!' }] as any);
+        }
+
+        {
+            const result = exec`Hello${'world'}!`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello\x00!', pos: 0, message: 'operator "charSequence(Hello,)"' });
+        }
+
+        {
+            const result = exec`Hello,${'world'}?`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello,\x00?', pos: 7, message: 'operator "charSequence(!)"' });
+        }
+    });
+
+    it("template-strings-3", function() {
+        type Ctx = number;
+        type Ast = {token: string};
+
+        const {seq, cls, notCls, clsFn, isParam, classes, cat,
+               qty, repeat, zeroWidth, beginning, end,
+               first, or, combine, err, makeProgram} = getStringParsers<Ctx, Ast>({
+            rawToToken: token => ({token}),
+            concatTokens: tokens => [tokens.reduce((a, b) => ({token: a.token + b.token}))],
+        });
+
+        const parse = makeProgram(combine(isParam(o => String(o) === 'world', o => (o as string).toUpperCase()), end()));
+
+        function exec(strings: TemplateStringsArray, ...values: any[]) {
+            return parse(templateStringsParserInput(strings, values));
+        }
+
+        {
+            const result = exec`${'world'}`;
+            expect(result.succeeded).toEqual(true);
+            expect(result.succeeded ? result.tokens : null).toEqual(['WORLD'] as any);
+        }
+
+        {
+            const result = exec`Hello${'world'}!`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello\x00!', pos: 0, message: 'operator "stringTemplatesParam()"' });
+        }
+
+        {
+            const result = exec`Hello,${'world'}?`;
+            expect(result).toEqual({ succeeded: false, error: false, src: 'Hello,\x00?', pos: 0, message: 'operator "stringTemplatesParam()"' });
+        }
     });
 });
