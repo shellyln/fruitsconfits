@@ -1,5 +1,17 @@
 # Changelog
 
+
+## v0.4.0
+
+* Add new feature:
+  * Add parser function for ES6 template strings parameter value.
+* Update dependencies.
+* Update CI configurations.
+
+
+---
+
+
 ## v0.3.1
 
 * Update dependencies.
