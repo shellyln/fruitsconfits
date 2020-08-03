@@ -281,6 +281,10 @@ export function parse(strings: TemplateStringsArray, ...values: any[]) {
 * [kanban-board-app](https://github.com/shellyln/kanban-board-app)
   * Kanban style task management board app
   * [Code](https://github.com/shellyln/kanban-board-app/blob/master/src/lib/csv.ts)
+* [Open SOQL](https://github.com/shellyln/open-soql)
+  * Open source implementation of the SOQL.
+  * [Code (1)](https://github.com/shellyln/open-soql/blob/master/src/lib/parser.ts),
+    [(2)](https://github.com/shellyln/open-soql/blob/master/src/lib/csv-parser.ts)
 
 
 ## License
