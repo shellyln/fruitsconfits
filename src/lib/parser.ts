@@ -45,7 +45,7 @@ export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
     let msg = '';
     let src = '';
     if (typeof result.src === 'string') {
-        src = result.src.slice(Math.max(result.pos - 5, 0), result.pos + 55);
+        src = (result.src as string).slice(Math.max(result.pos - 5, 0), result.pos + 55); // NOTE: (TS>=4.0) TS2339: Property 'slice' does not exist on type 'never'.
 
         let ar = src.split(/\r\n|\n|\r/);
         ar = ar.slice(0, 1)

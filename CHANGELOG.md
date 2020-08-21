@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.4.1
+
+* Update dependencies.
+* Migrate to TypeScript 4.0.
+
+
 ## v0.4.0
 
 * Add new feature:
