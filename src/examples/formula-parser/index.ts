@@ -27,12 +27,14 @@ type Ast = liyad.SxToken | AstChild | SxOp | undefined;
 const $s = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         [tokens.reduce((a, b) => String(a) + b)] : []),
 });
 
 const $o = getObjectParsers<Ast[], Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         [tokens.reduce((a, b) => String(a) + b)] : []),
     comparator: (a, b) => a === b,
 });
@@ -69,53 +71,53 @@ const commentOrSpace =
 
 
 const trueValue =
-    trans(tokens => [true])
-    (seq('true'));
+    trans(tokens => [true])(
+        seq('true'));
 
 const falseValue =
-    trans(tokens => [false])
-    (seq('false'));
+    trans(tokens => [false])(
+        seq('false'));
 
 const nullValue =
-    trans(tokens => [null])
-    (seq('null'));
+    trans(tokens => [null])(
+        seq('null'));
 
 const undefinedValue =
-    trans(tokens => [void 0])
-    (seq('undefined'));
+    trans(tokens => [void 0])(
+        seq('undefined'));
 
 const positiveInfinityValue =
-    trans(tokens => [Number.POSITIVE_INFINITY])
-    (qty(0, 1)(seq('+')), seq('Infinity'));
+    trans(tokens => [Number.POSITIVE_INFINITY])(
+        qty(0, 1)(seq('+')), seq('Infinity'));
 
 const negativeInfinityValue =
-    trans(tokens => [Number.NEGATIVE_INFINITY])
-    (seq('-Infinity'));
+    trans(tokens => [Number.NEGATIVE_INFINITY])(
+        seq('-Infinity'));
 
 const nanValue =
-    trans(tokens => [Number.NaN])
-    (seq('NaN'));
+    trans(tokens => [Number.NaN])(
+        seq('NaN'));
 
 
 const binaryIntegerValue =
-    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 2)])
-    (numbers.bin(seq('0b')));
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 2)])(
+        numbers.bin(seq('0b')));
 
 const octalIntegerValue =
-    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 8)])
-    (numbers.oct(seq('0o'), seq('0')));
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 8)])(
+        numbers.oct(seq('0o'), seq('0')));
 
 const hexIntegerValue =
-    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 16)])
-    (numbers.hex(seq('0x'), seq('0X')));
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 16)])(
+        numbers.hex(seq('0x'), seq('0X')));
 
 const decimalIntegerValue =
-    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 10)])
-    (numbers.int);
+    trans(tokens => [Number.parseInt((tokens as string[])[0].replace(/_/g, ''), 10)])(
+        numbers.int);
 
 const floatingPointNumberValue =
-    trans(tokens => [Number.parseFloat((tokens as string[])[0].replace(/_/g, ''))])
-    (numbers.float);
+    trans(tokens => [Number.parseFloat((tokens as string[])[0].replace(/_/g, ''))])(
+        numbers.float);
 
 const numberValue =
     first(octalIntegerValue,
@@ -130,8 +132,8 @@ const numberValue =
 
 const stringEscapeSeq = first(
     trans(t => ['\''])(seq('\\\'')),
-    trans(t => ['\"'])(seq('\\"')),
-    trans(t => ['\`'])(seq('\\`')),
+    trans(t => ['"'])(seq('\\"')),
+    trans(t => ['`'])(seq('\\`')),
     trans(t => ['\\'])(seq('\\\\')),
     trans(t => [''])(seq('\\\r\n')),
     trans(t => [''])(seq('\\\r')),
@@ -194,8 +196,8 @@ const atomValue =
           numberValue, stringValue);
 
 const symbolName =
-    trans(tokens => [{symbol: (tokens as string[])[0]}])
-    (cat(combine(classes.alpha, repeat(classes.alnum))));
+    trans(tokens => [{symbol: (tokens as string[])[0]}])(
+        cat(combine(classes.alpha, repeat(classes.alnum))));
 
 const objKey =
     first(stringValue, symbolName);
@@ -285,6 +287,7 @@ const objectValue = first(
 
 
 const unaryOp = (op: string, op1: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [{symbol: op}, op1];
 };
 
@@ -303,14 +306,17 @@ const binaryOp = (op: string, op1: any, op2: any) => {
         }
         return [{symbol: '$last'}, ...operands];
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [{symbol: op}, op1, op2];
 };
 
 const ternaryOp = (op: string, op1: any, op2: any, op3: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return [{symbol: op}, op1, op2, op3];
 };
 
 const isOperator = (v: any, op: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (typeof v === 'object' && v.op === op) {
         return true;
     }
@@ -347,6 +353,7 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) =>
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({op: '$noop'})),
              $o.behind(1, () => ({op: '$noop'}))(
+                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                  $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)), );
 
 
@@ -643,6 +650,7 @@ const program = makeProgram(trans(tokens => tokens)(
     end(), ));
 
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function parse(s: string) {
     const z = program(parserInput(s));
     if (! z.succeeded) {
@@ -651,6 +659,7 @@ export function parse(s: string) {
     return z.tokens[0];
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function evaluate(s: string) {
     const z = parse(s);
     liyad.lisp.setGlobals({

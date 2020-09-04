@@ -187,6 +187,7 @@ export function templateStringsParam<C, R>(
                     return v === input.start;
                 });
                 if (0 <= strIdx) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-non-null-assertion
                     const o = input.templateArgs![argIdx];
                     if (criteria(o)) {
                         return ({
@@ -199,6 +200,7 @@ export function templateStringsParam<C, R>(
                                 templateArgs: input.templateArgs,
                                 templateArgsPos: input.templateArgsPos,
                             },
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             tokens: [(conv ? conv(o) : o)],
                         });
                     }
@@ -216,6 +218,7 @@ export function templateStringsParam<C, R>(
 }
 
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getStringParsers<C, R>(
         params: {
             rawToToken: (rawToken: string) => R,

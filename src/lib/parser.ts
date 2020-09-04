@@ -21,7 +21,7 @@ function getLineAndCol(src: string, pos: number) {
             if (src[i + 1] === '\n') {
                 i++;
             }
-            // FALL_TURU
+            // Fall Throught
         case '\n':
             line++;
             col = 1;
@@ -40,7 +40,7 @@ function getLineAndCol(src: string, pos: number) {
 
 
 export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
-    result: ParserFnFailedResult<T, C, R>) {
+    result: ParserFnFailedResult<T, C, R>): string {
 
     let msg = '';
     let src = '';
@@ -61,8 +61,11 @@ export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
         src = '     (object)\n          ^~~~~~~~';
         try {
             src = '     ' +
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 JSON.stringify((result.src as any).slice(Math.max(result.pos - 10, 0), result.pos)) + '\n          ' +
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 JSON.stringify((result.src as any).slice(result.pos, result.pos + 1)) + '\n          ' +
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 JSON.stringify((result.src as any).slice(result.pos + 1, result.pos + 10));
 
             let ar = src.split(/\r\n|\n|\r/);
@@ -70,7 +73,9 @@ export function formatErrorMessage<T extends ArrayLike<T[number]>, C, R>(
                 .concat('          ^~~~~~~~')
                 .concat(...ar.slice(2));
             src = ar.join('\n') + '\n\n';
-        } catch (e) {}
+        } catch (e) {
+            // Nothing to do.
+        }
 
         msg = (`parse failed at position:${
             result.pos} ${
@@ -544,7 +549,9 @@ export function makeProgram<T extends ArrayLike<T[number]>, C, R>(
         try {
             return parser(input);
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             if (e.result) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
                 return e.result;
             } else {
                 throw e;

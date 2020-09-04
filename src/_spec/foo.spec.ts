@@ -307,6 +307,7 @@ describe("foo", function() {
             ]
         `;
         expect(() => parseJson(src)).toThrowMatching(err =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             err.message.includes('parse failed at position:43 line:4 col:14  operator "charSequence([)"\n'
         ));
     });

@@ -16,7 +16,8 @@ type Ast = string | string[];
 const $s = getStringParsers<Ctx, Ast>({
     rawToToken: rawToken => rawToken,
     concatTokens: tokens => (tokens.length ?
-        [tokens.reduce((a, b) => a as string + b as string)] : []),
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        [tokens.reduce((a, b) => a as string + b)] : []),
 });
 
 const {seq, cls, notCls, classes, cat,
@@ -51,6 +52,7 @@ const rows = makeProgram(combine(
     end(), ));
 
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function parse(s: string) {
     const z = rows(parserInput(s));
     if (! z.succeeded) {
