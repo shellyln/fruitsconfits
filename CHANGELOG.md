@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v0.4.2
+
+* Migrate to eslint.
+
+
 ## v0.4.1
 
 * Update dependencies.
