@@ -38,6 +38,7 @@
         "bin",
         "modules",
         "node_modules",
-        "spec"
+        "spec",
+        "src/_spec/**/*"
     ],
 }
