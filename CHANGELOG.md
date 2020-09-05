@@ -1,15 +1,11 @@
 # Changelog
 
 
-## v0.4.2
-
-* Migrate to eslint.
-
-
 ## v0.4.1
 
-* Update dependencies.
+* Migrate to eslint.
 * Migrate to TypeScript 4.0.
+* Update dependencies.
 
 
 ## v0.4.0
