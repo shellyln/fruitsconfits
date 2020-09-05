@@ -16,7 +16,7 @@ import { getObjectParsers }   from '../../lib/object-parser';
 
 
 
-type AstValuesT = number | string | boolean | BigInt | null | object | any[] | undefined;
+type AstValuesT = number | string | boolean | BigInt | null | Record<string, unknown> | any[] | undefined;
 
 type Ctx = undefined;
 type Ast = {token: string, type?: string, value?: AstValuesT};
@@ -68,69 +68,69 @@ const commentOrSpace =
 
 const trueValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: true}])
-    (seq('true'));
+        value: true}])(
+            seq('true'));
 
 const falseValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: false}])
-    (seq('false'));
+        value: false}])(
+            seq('false'));
 
 const nullValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: null}])
-    (seq('null'));
+        value: null}])(
+            seq('null'));
 
 const undefinedValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: void 0}])
-    (seq('undefined'));
+        value: void 0}])(
+            seq('undefined'));
 
 const positiveInfinityValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.POSITIVE_INFINITY}])
-    (qty(0, 1)(seq('+')), seq('Infinity'));
+        value: Number.POSITIVE_INFINITY}])(
+            qty(0, 1)(seq('+')), seq('Infinity'));
 
 const negativeInfinityValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.NEGATIVE_INFINITY}])
-    (seq('-Infinity'));
+        value: Number.NEGATIVE_INFINITY}])(
+            seq('-Infinity'));
 
 const nanValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.NaN}])
-    (seq('NaN'));
+        value: Number.NaN}])(
+            seq('NaN'));
 
 
 const binaryIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 2)}])
-    (numbers.bin(seq('0b')));
+        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 2)}])(
+            numbers.bin(seq('0b')));
 
 const octalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 8)}])
-    (numbers.oct(seq('0o'), seq('0')));
+        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 8)}])(
+            numbers.oct(seq('0o'), seq('0')));
 
 const hexIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 16)}])
-    (numbers.hex(seq('0x'), seq('0X')));
+        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 16)}])(
+            numbers.hex(seq('0x'), seq('0X')));
 
 const decimalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 10)}])
-    (numbers.int);
+        value: Number.parseInt(tokens[0].token.replace(/_/g, ''), 10)}])(
+            numbers.int);
 
 const bigDecimalIntegerValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: BigInt(tokens[0].token.replace(/_/g, ''))}])
-    (numbers.bigint);
+        value: BigInt(tokens[0].token.replace(/_/g, ''))}])(
+            numbers.bigint);
 
 const floatingPointNumberValue =
     trans(tokens => [{token: tokens[0].token, type: 'value',
-        value: Number.parseFloat(tokens[0].token.replace(/_/g, ''))}])
-    (numbers.float);
+        value: Number.parseFloat(tokens[0].token.replace(/_/g, ''))}])(
+            numbers.float);
 
 const numberValue =
     first(octalIntegerValue,
@@ -146,8 +146,8 @@ const numberValue =
 
 const stringEscapeSeq = first(
     trans(t => [{token: '\''}])(seq('\\\'')),
-    trans(t => [{token: '\"'}])(seq('\\"')),
-    trans(t => [{token: '\`'}])(seq('\\`')),
+    trans(t => [{token: '"'}])(seq('\\"')),
+    trans(t => [{token: '`'}])(seq('\\`')),
     trans(t => [{token: '\\'}])(seq('\\\\')),
     trans(t => [{token: ''}])(seq('\\\r\n')),
     trans(t => [{token: ''}])(seq('\\\r')),
@@ -280,7 +280,7 @@ const objectValue = first(
             if (tokens[i].token === '__proto__') {
                 continue; // NOTE: prevent prototype pollution attacks
             }
-            (ast.value as object)[tokens[i].token] = tokens[i + 1].value;
+            (ast.value as Record<string, unknown>)[tokens[i].token] = tokens[i + 1].value;
         }
         return [ast];
     })(
@@ -313,12 +313,14 @@ const transformOp = (op: ParserFnWithCtx<string, Ctx, Ast>) => trans(tokens => [
 const beginningOrEdgeOp =
     $o.first($o.beginning(() => ({token: '$noop', type: 'op', value: '$noop'})),
              $o.behind(1, () => ({token: '$noop', type: 'op', value: '$noop'}))(
+                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                  $o.clsFn(t => t && edgeOpsTokens.includes((t as any).op) ? true : false)), );
 
 
 const unaryOp = (op: string, op1: any) => {
     switch (op) {
     case '+':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return op1;
     case '-':
         return -op1;
@@ -338,10 +340,12 @@ const binaryOp = (op: string, op1: any, op2: any) => {
     case '%':
         return op1 % op2;
     case '+':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands
         return op1 + op2;
     case '-':
         return op1 - op2;
     case ',':
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return op2;
     default:
         throw new Error('Unknown operator has appeared.' + op);
@@ -373,6 +377,7 @@ const constExprRule20 = $o.trans(tokens => [tokens[1]])(
 //   beginning S -> beginning "-" S
 //   op        S -> op        "-" S
 const constExprRule16 = $o.trans(tokens => [{ token: tokens[2].token, type: 'value',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           value: unaryOp(tokens[1].token, tokens[2].value)}])(
     beginningOrEdgeOp,
     $o.clsFn(t => t.token === '+' || t.token === '-'),
@@ -382,6 +387,7 @@ const constExprRule16 = $o.trans(tokens => [{ token: tokens[2].token, type: 'val
 // production rule:
 //   S -> S "**" S
 const constExprRule15 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === '**'),
@@ -393,6 +399,7 @@ const constExprRule15 = $o.trans(tokens => [{token: tokens[1].token, type: 'valu
 //   S -> S "/" S
 //   S -> S "%" S
 const constExprRule14 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === '*' || t.token === '/' || t.token === '%'),
@@ -403,6 +410,7 @@ const constExprRule14 = $o.trans(tokens => [{token: tokens[1].token, type: 'valu
 //   S -> S "+" S
 //   S -> S "-" S
 const constExprRule13 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === '+' || t.token === '-'),
@@ -412,6 +420,7 @@ const constExprRule13 = $o.trans(tokens => [{token: tokens[1].token, type: 'valu
 // production rule:
 //   S -> S "," S
 const constExprRule1 = $o.trans(tokens => [{token: tokens[1].token, type: 'value',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         value: binaryOp(tokens[1].token, tokens[0].value, tokens[2].value)}])(
     $o.clsFn(t => t.type === 'value'),
     $o.clsFn(t => t.token === ','),
@@ -458,6 +467,7 @@ const program = makeProgram(trans(tokens => tokens)(
     end(), ));
 
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function parse(s: string) {
     const z = program(parserInput(s));
     if (! z.succeeded) {

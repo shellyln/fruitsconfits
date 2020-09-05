@@ -31,6 +31,7 @@ export function parserInput<T extends ArrayLike<T[number]>, C>(src: T, context?:
         src,
         start: 0,
         end: src.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         context: context as any,
         templateArgs: [],
         templateArgsPos: [],
@@ -55,6 +56,7 @@ export function templateStringsParserInput<C>(strings: TemplateStringsArray, val
         src: joined,
         start: 0,
         end: joined.length,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         context: context as any,
         templateArgs: values,
         templateArgsPos,

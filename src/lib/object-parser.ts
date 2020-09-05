@@ -57,7 +57,8 @@ export function objSequence<T extends ArrayLike<T[number]>, C, R>(
                 error: false,
                 src: input.src,
                 pos: input.start,
-                message: `operator "objSequence(${needle})"`,
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                message: `operator "objSequence(${needle})"`, // TODO: BUG: `needle` is not stringify correctly.
             });
         });
     });
@@ -188,6 +189,7 @@ export function objClassByNeedleFn<T extends ArrayLike<T[number]>, C, R>(
 }
 
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getObjectParsers<T extends ArrayLike<T[number]>, C, R>(
         params: {
             rawToToken: (rawToken: T[number]) => R,
