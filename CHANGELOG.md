@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v0.5.0
+
+* Update dependencies.
+* Update CI configurations.
+* Migrate to webpack 5.
+
+
+---
+
+
 ## v0.4.1
 
 * Migrate to eslint.
