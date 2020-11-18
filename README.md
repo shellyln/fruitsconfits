@@ -6,7 +6,7 @@
 
 [![npm](https://img.shields.io/npm/v/fruitsconfits.svg)](https://www.npmjs.com/package/fruitsconfits)
 [![GitHub release](https://img.shields.io/github/release/shellyln/fruitsconfits.svg)](https://github.com/shellyln/fruitsconfits/releases)
-[![Travis](https://img.shields.io/travis/shellyln/fruitsconfits/master.svg)](https://travis-ci.org/shellyln/fruitsconfits)
+[![.github/workflows/test.yml](https://github.com/shellyln/fruitsconfits/workflows/.github/workflows/test.yml/badge.svg)](https://github.com/shellyln/fruitsconfits/actions)
 [![GitHub forks](https://img.shields.io/github/forks/shellyln/fruitsconfits.svg?style=social&label=Fork)](https://github.com/shellyln/fruitsconfits/fork)
 [![GitHub stars](https://img.shields.io/github/stars/shellyln/fruitsconfits.svg?style=social&label=Star)](https://github.com/shellyln/fruitsconfits)
 
